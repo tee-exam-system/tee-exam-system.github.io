@@ -382,6 +382,7 @@ function drawExam() {
   ${x.status === 'published' && x.changedAfterPublish ? '<div class="msg w">প্রকাশের পরে কিছু বদলেছে — নতুন সংস্করণ হিসেবে আবার প্রকাশ করুন।</div>' : ''}
   <div class="msg i">${esc(pubTxt)} · উত্তর তোলা: ${x.importedAt ? ago(x.importedAt) + ' (' + esc(x.importFrom || '') + ')' : 'এখনো হয়নি'}${x.importBadCount ? ' · <b>' + bn(x.importBadCount) + 'টা সারি পড়া যায়নি</b> (সারি ' + bn((x.importBad || []).join(', ')) + ')' : ''}</div>
 
+  ${st.raw ? `<div class="msg i" style="font-size:12.5px">সিস্টেম যেভাবে ধরছে — প্রথম জমা: <b>${stamp(st.first)}</b> · শেষ জমা: <b>${stamp(st.last)}</b> · প্রশ্ন প্রকাশ: <b>${st.pub ? stamp(st.pub) : '—'}</b> · পুরস্কারের শেষ: <b>${st.winEnd ? stamp(st.winEnd) : '—'}</b> · জমার শেষ: <b>${st.lateEnd ? stamp(st.lateEnd) : '—'}</b> <span class="muted en">(${esc(st.tz || '')})</span></div>` : ''}
   <div class="stats">
     <div class="st"><b>${bnN(st.raw)}</b><span>মোট জমা</span></div>
     <div class="st a"><b>${bnN(st.ontime)}</b><span>সময়মতো (${bn(x.windowMin || s.windowMin)} মিনিটে)</span></div>
