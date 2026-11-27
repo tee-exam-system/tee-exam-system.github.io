@@ -708,48 +708,108 @@ function drawWinners() {
   $('cpDue').onclick = () => numbersDialog(due.map((w) => ({ m: w.mobile, n: w.name, s: w.school })), 'বিজয়ী — টাকা বাকি');
 }
 
-/* ══════════════ পরীক্ষার্থী (গ্রাহক তালিকা) ══════════════ */
-let PP = null, pq = '', pMin = 1, pBatch = '', pShown = 200;
+/* ══════════════ পরীক্ষার্থী (গ্রাহক তালিকা) ══════════════
+ * ছাঁকনি: কোন পরীক্ষাগুলো (বেছে / বিষয় / তারিখ) × কীভাবে (যেকোনোটায় / সবগুলোয় / একটাতেও না) + ব্যাচ, বিজয়ী, নম্বর, সংখ্যা, খোঁজা */
+let PP = null, pShown = 200;
+const PF0 = { q: '', ex: [], subj: '', from: '', to: '', mode: 'any', min: 1, batch: '', score: '', win: false, sec: '' };
+let PF = Object.assign({}, PF0);
 async function pagePeople() {
   $('page').innerHTML = '<div class="card muted">সব পরীক্ষা মিলিয়ে তালিকা তৈরি হচ্ছে…</div>';
   try { PP = await call('apiPeople'); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
   drawPeople();
 }
+// ছাঁকনিতে যে পরীক্ষাগুলো পড়ে
+function pSet() {
+  return PP.exams.filter((x) => (!PF.ex.length || PF.ex.includes(x.no)) && (!PF.subj || x.subject === PF.subj) && (!PF.from || x.date >= PF.from) && (!PF.to || x.date <= PF.to)).map((x) => x.no);
+}
+function pFiltered() { return !!(PF.ex.length || PF.subj || PF.from || PF.to); }
 function peopleRows() {
-  return PP.people.filter((p) => p.ex.length >= pMin && (!pBatch || p.b === pBatch) && (!pq || (p.n + ' ' + p.s + ' ' + p.m).toLowerCase().includes(pq)))
-    .sort((a, b) => b.ex.length - a.ex.length || b.best - a.best);
+  const set = pSet(), narrowed = pFiltered(), q = PF.q.toLowerCase();
+  return PP.people.filter((p) => {
+    const inSet = p.d.filter((d) => set.includes(d.x) && (!PF.sec || (PF.sec === 'on' ? !d.l : d.l)));
+    if (PF.mode === 'none') { if (!narrowed || inSet.length) return false; }
+    else if (PF.mode === 'all') { if (!set.length || inSet.length < set.length) return false; }
+    else if (!inSet.length) return false;
+    if (PF.mode !== 'none' && inSet.length < PF.min) return false;
+    if (PF.batch && p.b !== PF.batch) return false;
+    if (PF.win && !(PF.mode === 'none' ? p.d : inSet).some((d) => d.w)) return false;
+    if (PF.score !== '' && PF.mode !== 'none' && Math.max(...inSet.map((d) => d.sc)) < Number(PF.score)) return false;
+    if (q && !(p.n + ' ' + p.s + ' ' + p.m).toLowerCase().includes(q)) return false;
+    p._k = inSet; return true;
+  }).sort((a, b) => b._k.length - a._k.length || Math.max(0, ...b._k.map((d) => d.sc)) - Math.max(0, ...a._k.map((d) => d.sc)) || b.d.length - a.d.length);
+}
+function pTitle() {
+  const set = pSet(), parts = [];
+  if (pFiltered()) parts.push((PF.mode === 'none' ? 'অংশ নেয়নি: ' : PF.mode === 'all' ? 'সবগুলোয়: ' : '') + 'পরীক্ষা ' + set.map(pad2).join(', '));
+  if (PF.batch) parts.push('এসএসসি ' + PF.batch);
+  if (PF.win) parts.push('বিজয়ী');
+  if (PF.score !== '') parts.push('নম্বর ≥ ' + bn(PF.score));
+  if (PF.min > 1) parts.push('কমপক্ষে ' + bn(PF.min) + 'টায়');
+  return 'পরীক্ষার্থী' + (parts.length ? ' (' + parts.join(' · ') + ')' : '');
 }
 function drawPeople() {
-  const all = PP.people, nEx = PP.exams.length;
+  const all = PP.people, ex = PP.exams, set = pSet();
   const rows = peopleRows();
+  const subjects = [...new Set(ex.map((x) => x.subject))];
+  const exName = {}; ex.forEach((x) => exName[x.no] = x);
+  const seg = (k, t) => `<button class="tab${PF.mode === k ? ' on' : ''}" data-pm="${k}">${t}</button>`;
   $('page').innerHTML = `<div class="ph"><h2>পরীক্ষার্থী</h2><span class="sp"></span><button class="btn" id="cpNums">📋 নম্বর</button><button class="btn" id="dlCsv">⬇ Excel (CSV)</button></div>
   <div class="stats">
     <div class="st"><b>${bnN(all.length)}</b><span>আলাদা পরীক্ষার্থী (মোবাইল ধরে)</span></div>
-    <div class="st a"><b>${bnN(all.filter((p) => p.ex.length > 1).length)}</b><span>একাধিক পরীক্ষায়</span></div>
-    <div class="st"><b>${bn(nEx)}</b><span>যত পরীক্ষার উত্তর তোলা</span></div>
+    <div class="st a"><b>${bnN(all.filter((p) => p.d.length > 1).length)}</b><span>একাধিক পরীক্ষায়</span></div>
+    <div class="st"><b>${bn(ex.length)}</b><span>যত পরীক্ষার উত্তর তোলা</span></div>
+    <div class="st l"><b>${bnN(rows.length)}</b><span>ছাঁকনিতে এখন</span></div>
   </div>
-  <div class="card"><div class="row">
-    <input type="search" id="pq" placeholder="নাম, স্কুল, মোবাইল" value="${esc(pq)}" style="max-width:280px">
-    <label class="chk">কমপক্ষে <select id="pMin" style="width:auto">${Array.from({ length: Math.max(1, nEx) }, (_, i) => `<option value="${i + 1}"${pMin === i + 1 ? ' selected' : ''}>${bn(i + 1)}</option>`).join('')}</select> টা পরীক্ষায়</label>
-    <label class="chk">ব্যাচ <select id="pBatch" style="width:auto"><option value="">সব</option><option${pBatch === '২৭' ? ' selected' : ''}>২৭</option><option${pBatch === '২৮' ? ' selected' : ''}>২৮</option></select></label>
-    <span class="muted">তালিকায় ${bnN(rows.length)} জন</span></div>
-    <p class="muted" style="margin-top:6px;font-size:12.5px">মেগা পুরস্কারের শর্ত (প্রথম ১২টায় অংশগ্রহণ) দেখতে "কমপক্ষে ১২টা" বাছুন।</p></div>
-  <div class="tw"><table><thead><tr><th>নাম</th><th>স্কুল</th><th class="c">ব্যাচ</th><th>মোবাইল</th><th>যে পরীক্ষাগুলোয়</th><th class="c">সর্বোচ্চ</th><th class="c">বিজয়ী</th><th>শেষ দেখা</th></tr></thead><tbody>
+  <div class="card"><h3>ছাঁকনি</h3>
+    <div class="fld"><label>পরীক্ষা (চাপলে বাছাই; কিছু না বাছলে সব)</label><div class="row">${ex.map((x) => `<button class="tab${PF.ex.includes(x.no) ? ' on' : ''}" data-px="${x.no}" title="${esc(dateBn(x.date))}">${pad2(x.no)} · ${esc(x.subject)} <em>${esc(dateBn(x.date, true).split(',')[0])}</em></button>`).join('') || '<span class="muted">এখনো কোনো পরীক্ষার উত্তর তোলা হয়নি</span>'}</div></div>
+    <div class="grid" style="margin-top:10px">
+      <div class="fld"><label>বিষয়</label><select id="pSubj"><option value="">সব বিষয়</option>${subjects.map((s) => `<option${PF.subj === s ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
+      <div class="fld"><label>তারিখ থেকে</label><input type="date" id="pFrom" value="${esc(PF.from)}"></div>
+      <div class="fld"><label>তারিখ পর্যন্ত</label><input type="date" id="pTo" value="${esc(PF.to)}"></div>
+      <div class="fld"><label>ব্যাচ</label><select id="pBatch"><option value="">সব</option><option value="২৭"${PF.batch === '২৭' ? ' selected' : ''}>এসএসসি ২০২৭</option><option value="২৮"${PF.batch === '২৮' ? ' selected' : ''}>এসএসসি ২০২৮</option></select></div>
+      <div class="fld"><label>জমা দিয়েছে</label><select id="pSec"><option value="">সময়মতো বা পরে</option><option value="on"${PF.sec === 'on' ? ' selected' : ''}>শুধু সময়মতো</option><option value="late"${PF.sec === 'late' ? ' selected' : ''}>শুধু নির্ধারিত সময়ের পরে</option></select></div>
+      <div class="fld"><label>কমপক্ষে কয়টা পরীক্ষায়</label><select id="pMin">${Array.from({ length: Math.max(1, set.length) }, (_, i) => `<option value="${i + 1}"${PF.min === i + 1 ? ' selected' : ''}>${bn(i + 1)}</option>`).join('')}</select></div>
+      <div class="fld"><label>সর্বোচ্চ নম্বর কমপক্ষে</label><input type="number" id="pScore" min="0" max="100" value="${esc(PF.score)}" placeholder="যেমন ৪৫"></div>
+      <div class="fld"><label>&nbsp;</label><label class="chk"><input type="checkbox" id="pWin"${PF.win ? ' checked' : ''}> শুধু বিজয়ী</label></div>
+      <div class="fld w2"><label>নাম, স্কুল বা মোবাইল</label><input type="search" id="pq" value="${esc(PF.q)}" placeholder="খুঁজুন"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><span class="muted" style="font-size:12.5px">এই পরীক্ষাগুলোর (${set.length ? bn(set.length) + 'টা' : 'কোনোটা নয়'}) —</span>${seg('any', 'যেকোনোটায় অংশ নিয়েছে')}${seg('all', 'সবগুলোতেই অংশ নিয়েছে')}${seg('none', 'একটাতেও অংশ নেয়নি')}</div>
+    ${PF.mode === 'none' && !pFiltered() ? '<p class="msg w" style="margin-top:8px">"অংশ নেয়নি" দেখতে উপরে পরীক্ষা, বিষয় বা তারিখ বাছুন — যেমন পরীক্ষা ০২ বাছলে দেখাবে কারা আগে কোনো পরীক্ষা দিয়েছে কিন্তু ০২-তে আসেনি।</p>' : ''}
+    <div class="row" style="margin-top:10px"><button class="btn s" id="pMega">🏆 মেগা পুরস্কারের শর্ত (১–১২ সবগুলোয়)</button><button class="btn s" id="pMiss">শেষ পরীক্ষায় যারা আসেনি</button><button class="btn s d" id="pReset">ছাঁকনি মুছুন</button><span class="muted">তালিকায় <b>${bnN(rows.length)}</b> জন</span></div>
+  </div>
+  <div class="tw"><table><thead><tr><th>নাম</th><th>স্কুল</th><th class="c">ব্যাচ</th><th>মোবাইল</th><th>পরীক্ষা ও নম্বর</th><th class="c">মোট পরীক্ষা</th><th class="c">বিজয়ী</th><th>শেষ দেখা</th></tr></thead><tbody>
   ${rows.slice(0, pShown).map((p) => `<tr><td class="en">${esc(p.n)}</td><td class="en">${esc(p.s)}</td><td class="c">${esc(p.b)}</td><td class="en"><a href="tel:${esc(p.m)}">${esc(p.m)}</a></td>
-    <td>${p.ex.map((n) => '<span class="fl o">' + bn(n) + '</span>').join('')}</td><td class="c">${bn(p.best)}</td><td class="c">${p.wins ? '🏆 ' + bn(p.wins) : ''}</td><td>${stamp(p.last)}</td></tr>`).join('')}
+    <td>${p.d.map((d) => `<span class="fl ${set.includes(d.x) ? 'o' : ''}" title="${esc((exName[d.x] || {}).subject || '')}${d.l ? ' · সময়ের পরে' : ''}">${pad2(d.x)}: ${bn(d.sc)}${d.w ? ' 🏆' : ''}${d.l ? '*' : ''}</span>`).join('')}</td>
+    <td class="c">${bn(p.d.length)}</td><td class="c">${p.wins ? '🏆 ' + bn(p.wins) : ''}</td><td style="white-space:nowrap">${stamp(p.last)}</td></tr>`).join('')}
   </tbody></table></div>
+  <p class="muted" style="font-size:12px;margin-top:6px">সবুজ = ছাঁকনির পরীক্ষা · * = নির্ধারিত সময়ের পরে জমা · 🏆 = নগদ পুরস্কার</p>
   ${rows.length > pShown ? `<div class="more"><button class="btn" id="pMore">আরও দেখুন (বাকি ${bn(rows.length - pShown)})</button></div>` : ''}`;
-  $('pq').oninput = (e) => { pq = e.target.value.trim().toLowerCase(); pShown = 200; drawPeople(); $('pq').focus(); $('pq').setSelectionRange(pq.length, pq.length); };
-  $('pMin').onchange = (e) => { pMin = Number(e.target.value); drawPeople(); };
-  $('pBatch').onchange = (e) => { pBatch = e.target.value; drawPeople(); };
+  const redraw = () => { pShown = 200; drawPeople(); };
+  document.querySelectorAll('[data-px]').forEach((b) => b.onclick = () => { const n = Number(b.dataset.px); PF.ex = PF.ex.includes(n) ? PF.ex.filter((x) => x !== n) : PF.ex.concat(n); PF.min = 1; redraw(); });
+  document.querySelectorAll('[data-pm]').forEach((b) => b.onclick = () => { PF.mode = b.dataset.pm; redraw(); });
+  $('pSubj').onchange = (e) => { PF.subj = e.target.value; PF.min = 1; redraw(); };
+  $('pFrom').onchange = (e) => { PF.from = e.target.value; PF.min = 1; redraw(); };
+  $('pTo').onchange = (e) => { PF.to = e.target.value; PF.min = 1; redraw(); };
+  $('pBatch').onchange = (e) => { PF.batch = e.target.value; redraw(); };
+  $('pSec').onchange = (e) => { PF.sec = e.target.value; redraw(); };
+  $('pMin').onchange = (e) => { PF.min = Number(e.target.value); redraw(); };
+  $('pScore').onchange = (e) => { PF.score = e.target.value === '' ? '' : Number(e.target.value); redraw(); };
+  $('pWin').onchange = (e) => { PF.win = e.target.checked; redraw(); };
+  $('pq').oninput = (e) => { PF.q = e.target.value.trim(); pShown = 200; drawPeople(); $('pq').focus(); $('pq').setSelectionRange(PF.q.length, PF.q.length); };
+  $('pReset').onclick = () => { PF = Object.assign({}, PF0); redraw(); };
+  $('pMega').onclick = () => { PF = Object.assign({}, PF0, { ex: ex.filter((x) => x.no >= 1 && x.no <= 12).map((x) => x.no), mode: 'all' }); redraw(); };
+  $('pMiss').onclick = () => { const last = ex[ex.length - 1]; if (!last) return; PF = Object.assign({}, PF0, { ex: [last.no], mode: 'none' }); redraw(); };
   if ($('pMore')) $('pMore').onclick = () => { pShown += 500; drawPeople(); };
-  $('cpNums').onclick = () => numbersDialog(rows.map((p) => ({ m: p.m, n: p.n, s: p.s })), 'পরীক্ষার্থী' + (pMin > 1 ? ' (কমপক্ষে ' + bn(pMin) + 'টা পরীক্ষায়)' : '') + (pBatch ? ' · এসএসসি ' + pBatch : ''));
+  $('cpNums').onclick = () => numbersDialog(rows.map((p) => ({ m: p.m, n: p.n, s: p.s })), pTitle());
   $('dlCsv').onclick = () => {
     const cell = (v) => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
-    const lines = [['নাম', 'স্কুল', 'ব্যাচ', 'মোবাইল', 'পরীক্ষা', 'পরীক্ষার সংখ্যা', 'সর্বোচ্চ', 'বিজয়ী'].map(cell).join(',')]
-      .concat(rows.map((p) => [p.n, p.s, p.b, '\t' + p.m, p.ex.join(' '), p.ex.length, p.best, p.wins].map(cell).join(',')));
+    const head = ['নাম', 'স্কুল', 'ব্যাচ', 'মোবাইল', 'মোট পরীক্ষা', 'বিজয়ী'].concat(ex.map((x) => 'পরীক্ষা ' + x.no + ' (' + x.subject + ')'));
+    const lines = [head.map(cell).join(',')].concat(rows.map((p) => {
+      const by = {}; p.d.forEach((d) => by[d.x] = d.sc + (d.w ? ' (বিজয়ী)' : '') + (d.l ? ' (পরে)' : ''));
+      return [p.n, p.s, p.b, '\t' + p.m, p.d.length, p.wins].concat(ex.map((x) => by[x.no] == null ? '' : by[x.no])).map(cell).join(',');
+    }));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' }));
-    a.download = 'পরীক্ষার্থী-তালিকা.csv'; a.click();
+    a.download = pTitle().replace(/[^\wঀ-৿]+/g, '-') + '.csv'; a.click();
   };
 }
 
