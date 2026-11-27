@@ -1,0 +1,17 @@
+{
+  "name": "ফলাফল-সিস্টেম — ফ্রি MCQ পরীক্ষা",
+  "short_name": "ফলাফল",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#3B050E",
+  "theme_color": "#3B050E",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

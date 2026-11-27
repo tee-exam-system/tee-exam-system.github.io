@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>ফলাফল — ফ্রি MCQ পরীক্ষা</title>
+<link rel="icon" href="../assets/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--m1:#3B050E;--m2:#6A0A18;--m3:#A8142A;--ink:#2A1418;--mut:#7A6A6C;--line:#D9C9B8;--zb:#FBF7F1}
+@page{size:A4 landscape;margin:0}
+body{background:#8a8a8a;font-family:"Noto Sans Bengali","Roboto",sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#bar{position:sticky;top:0;z-index:5;background:#2A0409;color:#fff;display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 18px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#bar b{font-size:15px}
+#bar button{font:inherit;font-weight:700;border:0;border-radius:9px;padding:8px 16px;cursor:pointer;background:linear-gradient(180deg,#FFE48A,#F2C44A);color:#3B050E}
+#bar label{display:flex;gap:6px;align-items:center;cursor:pointer}
+#bar .sp{flex:1}
+#bar .hint{font-size:12px;color:#E2C9A8}
+#msg{max-width:700px;margin:40px auto;background:#fff;border-radius:12px;padding:20px;font-size:15px}
+#pages{padding:24px 0}
+.page{width:1123px;height:794px;background:#fff;margin:0 auto 24px;padding:22px 28px 0;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}
+.body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+@media print{
+  body{background:#fff}
+  #bar,#msg{display:none!important}
+  #pages{padding:0}
+  .page{margin:0;box-shadow:none;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+}
+
+/* মাথা (প্রথম পাতা) */
+.hero{flex:none;position:relative;height:108px;border-radius:14px;overflow:hidden;color:#fff;display:flex;align-items:center;padding:0 24px;gap:22px;
+  background:radial-gradient(520px 260px at 70% 10%,#A8142A 0%,rgba(168,20,42,0) 70%),linear-gradient(120deg,#3B050E 0%,#6A0A18 55%,#43060F 100%)}
+.hero::before{content:"";position:absolute;inset:0;opacity:.08;background:repeating-linear-gradient(135deg,#F2C44A 0 1px,transparent 1px 20px)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,rgba(242,196,74,0),#F2C44A 18%,#FFE9A8 50%,#F2C44A 82%,rgba(242,196,74,0))}
+.brand{position:relative;flex:none;display:flex;align-items:center;gap:10px;background:#fff;border-radius:11px;padding:5px 12px 5px 6px;box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.brand img.tee{height:40px;border-radius:50%}
+.brand i{width:1.5px;height:28px;background:#DDD}
+.brand img.tp{height:24px}
+.ht{position:relative;flex:1;min-width:0;line-height:1}
+.ht .k{font-weight:600;font-size:15px;color:#F6E7D6;letter-spacing:.2px}
+.ht .t{font-family:"Anek Bangla";font-weight:800;font-size:44px;letter-spacing:-.5px;margin-top:4px;white-space:nowrap}
+.ht .t span{font-family:"Noto Sans Bengali";font-size:36px;background:linear-gradient(180deg,#FFF1BE,#FFD21F 50%,#E0A410);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats{position:relative;display:flex;gap:10px}
+.st{min-width:104px;max-width:190px;text-align:center;border:1px solid rgba(242,196,74,.45);background:rgba(255,255,255,.06);border-radius:10px;padding:8px 12px 7px}
+.st b{display:block;font-weight:800;font-size:22px;color:#FFD21F;line-height:1.1;white-space:nowrap}
+.st small{display:block;font-size:11.5px;font-weight:600;color:#F6E7D6;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info{flex:none;display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:12.5px;font-weight:600;color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#FBF3E4;border:1px solid #EFDDB9;border-radius:30px;padding:3px 12px;white-space:nowrap}
+.chip em{font-style:normal;color:var(--mut);font-weight:500}
+.info .nx{margin-left:auto;background:var(--m2);border-color:var(--m2);color:#fff}
+.info .nx em{color:#F2C44A}
+
+.sech{flex:none;display:flex;align-items:center;gap:10px;margin:11px 0 7px}
+.sech h3{font-weight:800;font-size:16.5px;color:var(--m2);white-space:nowrap}
+.sech h3 span{color:#A06E00}
+.sech .rule{flex:1;height:1.5px;background:linear-gradient(90deg,#F2C44A,rgba(242,196,74,0))}
+.win{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.wc{display:flex;gap:8px;align-items:center;border:1px solid #EAD9B8;border-radius:10px;padding:6px 8px;height:84px;background:linear-gradient(180deg,#FFFDF7,#FBF2DE)}
+.wc .md{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#3B050E;
+  background:radial-gradient(circle at 35% 30%,#FFF3C4,#FFD21F 45%,#D99A06);box-shadow:0 2px 6px rgba(160,110,0,.35)}
+.wc.r2 .md{background:radial-gradient(circle at 35% 30%,#FFFFFF,#D9DDE3 45%,#9AA3AE);color:#2A2F38}
+.wc.r3 .md{background:radial-gradient(circle at 35% 30%,#FFE2C6,#E3A06A 45%,#A8622C);color:#3A1A06}
+.wc.r1{border-color:#E7C060;background:linear-gradient(180deg,#FFF8DD,#FCE9A8)}
+.wc .tx{min-width:0;flex:1;line-height:1.22}
+.wc .nm{font-family:"Roboto";font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc .sc{font-family:"Roboto";font-size:10.5px;color:#5E4E50;margin-top:1px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wc .mt{margin-top:3px;font-size:10.5px;color:var(--mut);font-weight:600;line-height:1.35}
+.wc .mt b{color:var(--m2);font-weight:800}
+
+table{flex:none;border-collapse:collapse;width:100%;table-layout:fixed}
+th{background:var(--m1);color:#fff;font-weight:700;font-size:12px;height:27px;text-align:center;padding:0 8px;border:1px solid var(--m1);border-right-color:rgba(255,255,255,.22)}
+th:last-child{border-right-color:var(--m1)}
+td{height:22.5px;font-size:12px;padding:0 9px;border:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+td.c{text-align:center}
+tbody tr:nth-child(even) td{background:var(--zb)}
+td.rk{font-weight:700;color:var(--m2)}
+td.en{font-family:"Roboto","Noto Sans Bengali";font-size:12px}
+td.nm{font-weight:500}
+td.sc{color:#4b3b3e;font-size:11.5px}
+td.tm{color:#5E4E50;font-size:11.5px}
+td.pz{font-size:11.5px;color:#5E4E50;font-weight:600}
+td .pt{display:inline-block;min-width:44px;border-radius:20px;padding:0 8px;font-weight:700;font-size:11.5px;background:#F4ECE2;color:var(--ink)}
+td .pt.hi{background:#FCE9A8;color:#5A3B00}
+.gap{flex:none;height:8px}
+.prac{flex:none;display:flex;align-items:center;gap:10px;margin:8px 0 6px;padding:6px 12px;border-radius:8px;background:#F6EFE6;border-left:4px solid var(--m3)}
+.prac b{font-weight:800;font-size:14px;color:var(--m2);white-space:nowrap}
+.prac span{font-size:11.5px;color:var(--mut);font-weight:600}
+.note{flex:none;margin-top:8px;font-size:11px;color:var(--mut);line-height:1.5}
+.note b{color:var(--m2)}
+.slim{flex:none;display:flex;align-items:center;gap:14px;height:42px;padding:0 16px 0 6px;border-radius:10px;color:#fff;
+  background:linear-gradient(120deg,#3B050E 0%,#6A0A18 60%,#43060F 100%);position:relative;overflow:hidden}
+.slim::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,rgba(242,196,74,0),#F2C44A 20%,#FFE9A8 50%,#F2C44A 80%,rgba(242,196,74,0))}
+.slim .brand{padding:3px 9px 3px 4px;border-radius:8px;box-shadow:none}
+.slim .brand img.tee{height:30px}.slim .brand img.tp{height:18px}.slim .brand i{height:20px}
+.slim .t{font-family:"Anek Bangla";font-weight:800;font-size:20px;white-space:nowrap}
+.slim .t span{font-family:"Noto Sans Bengali";font-size:17px;color:#FFD21F}
+.slim .s{font-size:12.5px;font-weight:600;color:#F6E7D6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slim .pg{margin-left:auto;font-size:12px;font-weight:600;color:#F2C44A;white-space:nowrap}
+.ad{flex:none;display:flex;align-items:center;gap:14px;height:48px;margin:8px -28px 0;padding:0 28px;color:#fff;position:relative;
+  background:linear-gradient(100deg,#24040A 0%,#3B050E 45%,#56091A 100%)}
+.ad::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,rgba(242,196,74,0),#F2C44A 15%,#FFE9A8 50%,#F2C44A 85%,rgba(242,196,74,0))}
+.ad .bk{display:flex;align-items:flex-end;height:48px;padding-top:4px}
+.ad .bk img{height:40px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.5);margin-right:-8px;transform:translateY(-4px)}
+.ad .bk img:nth-child(1){transform:translateY(-2px) rotate(-6deg)}
+.ad .bk img:nth-child(3){transform:translateY(-2px) rotate(6deg)}
+.ad .m{margin-left:10px;line-height:1.2;min-width:0}
+.ad .m b{font-family:"Anek Bangla";font-weight:800;font-size:16px;color:#F2C44A;white-space:nowrap}
+.ad .m small{display:block;font-size:11.5px;font-weight:500;color:#EADBCB;white-space:nowrap}
+.ad .cta{margin-left:auto;display:flex;gap:8px}
+.ad .cta span{border:1px solid rgba(242,196,74,.7);color:#F2C44A;border-radius:20px;padding:3px 12px;font-family:"Poppins";font-weight:600;font-size:12px;white-space:nowrap}
+.ad .pg{font-size:11px;font-weight:600;color:#C9B49E;margin-left:6px;white-space:nowrap}
+.inner{display:inline-block;background:#B3261E;color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div id="bar"><b id="barT">ফলাফল</b>
+  <label><input type="checkbox" id="oPhone"> ফোন নম্বরসহ (শুধু ভেতরের কাজে)</label>
+  <label><input type="checkbox" id="oTotal"> মোট অংশগ্রহণ দেখাও</label>
+  <span class="sp"></span><span class="hint">প্রিন্টের জানালায় "Save as PDF" বাছুন · কাগজ A4 আড়াআড়ি · Margins: None · Background graphics ✔</span>
+  <button id="pBtn">🖨 প্রিন্ট / PDF</button></div>
+<div id="msg">লোড হচ্ছে…</div>
+<div id="pages"></div>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwemdMvjng4OvOSfUVgVeFSQkCH5JtWgkil20tewqNPD6l8XzRdspUo8ngQDZNmW0yodQ/exec';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const BN = '০১২৩৪৫৬৭৮৯', bn = (v) => String(v == null ? '' : v).replace(/\d/g, (d) => BN[d]);
+const bnN = (n) => bn(Number(n || 0).toLocaleString('en-IN'));
+const pad2 = (n) => bn(String(n).padStart(2, '0'));
+const MON = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const MON_S = ['জানু.', 'ফেব্রু.', 'মার্চ', 'এপ্রি.', 'মে', 'জুন', 'জুলাই', 'আগ.', 'সেপ্টে.', 'অক্টো.', 'নভে.', 'ডিসে.'];
+const DAY = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+const dk = (ms) => { const d = new Date(Number(ms) + 6 * 3600000); return { y: d.getUTCFullYear(), mo: d.getUTCMonth(), d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), s: d.getUTCSeconds() }; };
+const period = (h) => h < 4 ? 'রাত' : h < 12 ? 'সকাল' : h < 15 ? 'দুপুর' : h < 18 ? 'বিকাল' : h < 20 ? 'সন্ধ্যা' : 'রাত';
+function stamp(ms, ymd, short) {
+  const p = dk(ms), same = ymd === p.y + '-' + String(p.mo + 1).padStart(2, '0') + '-' + String(p.d).padStart(2, '0');
+  return (same ? '' : bn(p.d) + ' ' + MON_S[p.mo] + ' ') + period(p.h) + ' ' + bn(p.h % 12 || 12) + ':' + pad2(p.mi) + (short && !same ? '' : ':' + pad2(p.s));
+}
+function dateBn(ymd, noYear) { const a = String(ymd || '').split('-').map(Number); if (!a[0]) return ''; const d = new Date(Date.UTC(a[0], a[1] - 1, a[2])); return bn(a[2]) + ' ' + MON[a[1] - 1] + (noYear ? '' : ' ' + bn(a[0])) + ', ' + DAY[d.getUTCDay()]; }
+function ymdOf(ms) { const p = dk(ms); return p.y + '-' + String(p.mo + 1).padStart(2, '0') + '-' + String(p.d).padStart(2, '0'); }
+
+let D = null;
+const id = decodeURIComponent(location.hash.slice(1));
+
+async function load() {
+  const auth = localStorage.getItem('mq_auth') || '';
+  if (!auth) { $('msg').textContent = 'আগে মূল অ্যাপে লগইন করুন, তারপর সেখান থেকে এই পাতা খুলুন।'; return; }
+  try {
+    const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: 'apiExam', args: [id], auth }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error === 'AUTH_REQUIRED' ? 'আবার লগইন করুন (মূল অ্যাপে)।' : j.error);
+    D = j.data;
+  } catch (e) { $('msg').textContent = e.message; return; }
+  $('oTotal').checked = D.exam.showTotal != null ? !!D.exam.showTotal : !!D.settings.showTotal;
+  await document.fonts.ready;
+  draw();
+}
+$('oPhone').onchange = draw; $('oTotal').onchange = draw;
+$('pBtn').onclick = () => window.print();
+
+function draw() {
+  const x = D.exam, s = D.settings, st = D.stats, phone = $('oPhone').checked, showTotal = $('oTotal').checked;
+  if (!st.raw) { $('msg').textContent = 'এই পরীক্ষার উত্তর এখনো তোলা হয়নি।'; return; }
+  $('msg').style.display = 'none';
+  const no = pad2(x.no), title = `ফলাফল <span>· পরীক্ষা ${no}</span>`;
+  document.title = 'ফলাফল — পরীক্ষা ' + no + ' — ' + x.subject + (phone ? ' (ফোন নম্বরসহ)' : '');
+  $('barT').textContent = 'পরীক্ষা ' + no + ' · ' + x.subject + (x.status === 'published' ? ' · প্রকাশিত সংস্করণ ' + bn(x.version) : ' · এখনো প্রকাশ হয়নি (খসড়া)');
+  const total = st.ontime + st.late;
+  const winners = D.ontime.filter((e) => e.w), rest = D.ontime.filter((e) => !e.w), late = D.late;
+  const resDate = x.resultDate || (x.publishedAt ? ymdOf(x.publishedAt) : '');
+  const brand = '<div class="brand"><img class="tee" src="../assets/tee-logo.png"><i></i><img class="tp" src="../assets/tp-logo.webp"></div>';
+  const ad = `<div class="ad"><div class="bk"><img src="../assets/cov-ict.webp"><img src="../assets/cov-math.webp"><img src="../assets/cov-bangla.webp"></div>
+    <div class="m"><b>${esc(s.adTitle)}</b><small>${esc(s.adLine)}</small></div>
+    <div class="cta"><span>${esc(s.web)}</span><span>${esc(s.phone)}</span></div><div class="pg"></div></div>`;
+  const cols = phone ? [60, 175, 0, 76, 80, 120, 100, 170] : [66, 190, 0, 84, 88, 132, 196];
+  const colg = '<colgroup>' + cols.map((w) => w ? `<col style="width:${w}px">` : '<col>').join('') + '</colgroup>';
+  const head = colg + '<thead><tr><th>মেধাক্রম</th><th>নাম</th><th>স্কুল</th><th>শ্রেণি</th><th>প্রাপ্ত নম্বর</th><th>জমার সময়</th>' + (phone ? '<th>মোবাইল</th>' : '') + '<th>প্রাপ্ত পুরস্কার</th></tr></thead>';
+  const tr = (e, hi) => `<tr><td class="c rk">${bn(e.r)}</td><td class="en nm">${esc(e.n)}</td><td class="en sc">${esc(e.s)}</td><td class="c">${e.b ? 'এসএসসি ' + esc(e.b) : ''}</td>
+    <td class="c">${hi ? `<span class="pt${e.sc >= e.mx - 2 ? ' hi' : ''}">${bn(e.sc)}/${bn(e.mx)}</span>` : bn(e.sc) + '/' + bn(e.mx)}</td><td class="c tm">${stamp(e.t, x.date, true)}</td>
+    ${phone ? `<td class="c en">${esc(e.m)}</td>` : ''}<td class="c pz">${esc(e.w ? s.prizeTop : s.prizeAll)}</td></tr>`;
+
+  const P = $('pages'); P.innerHTML = '';
+  let page, body, tbody;
+  function newPage(first) {
+    page = document.createElement('div'); page.className = 'page';
+    page.innerHTML = (first
+      ? `<div class="hero">${brand}<div class="ht"><div class="k">${esc(s.series)} · ${esc(x.batch || s.batchLine)}</div><div class="t">${title}</div></div>
+          <div class="stats"><div class="st"><b>${esc(x.subject)}</b><small>${esc(x.chapters || '')}</small></div>${showTotal ? `<div class="st"><b>${bnN(total)}</b><small>মোট অংশগ্রহণ</small></div>` : ''}<div class="st"><b>${bn(st.top)}/${bn(st.max)}</b><small>সর্বোচ্চ প্রাপ্ত নম্বর</small></div></div></div>
+         <div class="info"><span class="chip"><em>পরীক্ষা</em> ${esc(dateBn(x.date))}</span>${resDate ? `<span class="chip"><em>ফলাফল প্রকাশ</em> ${esc(dateBn(resDate).split(',')[0])}</span>` : ''}${phone ? '<span class="chip" style="background:#B3261E;color:#fff;border-color:#B3261E">ভেতরের কাজে — প্রকাশ করবেন না</span>' : ''}${x.nextExam ? `<span class="chip nx"><em>পরের পরীক্ষা</em> ${esc(x.nextExam)}</span>` : ''}</div>`
+      : `<div class="slim">${brand}<div class="t">${title}</div><div class="s">${esc(x.subject)} · ${esc(x.batch || s.batchLine)} · ${esc(dateBn(x.date).split(',')[0])}</div><div class="pg">${showTotal ? 'মোট অংশগ্রহণ ' + bnN(total) : ''}</div></div><div class="gap"></div>`) +
+      '<div class="body"></div>' + ad;
+    P.appendChild(page);
+    body = page.querySelector('.body'); tbody = null;
+  }
+  const over = () => body.scrollHeight > body.clientHeight + 1;
+  function put(html) { // একটা অংশ; না ধরলে পরের পাতায়
+    const w = document.createElement('div'); w.innerHTML = html;
+    const nodes = [...w.children];
+    nodes.forEach((n) => body.appendChild(n));
+    if (over() && body.children.length > nodes.length) { nodes.forEach((n) => n.remove()); newPage(false); nodes.forEach((n) => body.appendChild(n)); }
+  }
+  function startTable() { const t = document.createElement('table'); t.innerHTML = head + '<tbody></tbody>'; body.appendChild(t); tbody = t.querySelector('tbody'); if (over()) { t.remove(); newPage(false); startTable(); } }
+  function rows(list, hi) {
+    let i = 0;
+    while (i < list.length) {
+      if (!tbody) startTable();
+      // যত সারি ধরে আন্দাজ করে একবারে বসাও, তারপর বেশি হলে সরাও
+      const free = body.clientHeight - contentH();
+      let n = Math.max(1, Math.min(list.length - i, Math.floor(free / 23.5) + 1));
+      tbody.insertAdjacentHTML('beforeend', list.slice(i, i + n).map((e) => tr(e, hi)).join(''));
+      while (over() && tbody.children.length > 1 && n > 0) { tbody.lastElementChild.remove(); n--; }
+      if (over() && tbody.children.length === 1 && n === 1) { tbody.lastElementChild.remove(); n = 0; }
+      i += n;
+      if (i < list.length) { newPage(false); tbody = null; }
+    }
+  }
+  function contentH() { let h = 0; [...body.children].forEach((c) => { const cs = getComputedStyle(c); h += c.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom); }); return h; }
+
+  newPage(true);
+  if (winners.length) {
+    put(`<div class="sech"><h3>মেধাতালিকার সেরা ${bn(winners.length)} জন <span>— ${esc(s.prizeHead)}</span></h3><div class="rule"></div></div>`);
+    put(`<div class="win">${winners.map((e) => `<div class="wc r${e.w}"><div class="md">${bn(e.w)}</div><div class="tx"><div class="nm">${esc(e.n)}</div><div class="sc">${esc(e.s)}</div>
+      <div class="mt">প্রাপ্ত নম্বর <b>${bn(e.sc)}/${bn(e.mx)}</b><br>জমার সময় ${stamp(e.t, x.date)}${phone ? '<br><b>' + esc(e.m) + '</b>' : ''}</div></div></div>`).join('')}</div>`);
+  }
+  if (rest.length) { put('<div class="sech"><h3>মেধাতালিকা</h3><div class="rule"></div></div>'); tbody = null; rows(rest, true); }
+  if (late.length) {
+    put(`<div class="prac"><b>${esc(s.lateTitle)}</b><span>${esc(s.lateNote)}</span></div>`);
+    tbody = null; rows(late, false);
+  }
+  put(`<div class="note"><b>বিঃদ্রঃ</b> ${esc(s.note)}</div>`);
+  const pages = [...P.querySelectorAll('.page')];
+  pages.forEach((p, i) => { p.querySelector('.ad .pg').textContent = 'পাতা ' + bn(i + 1) + ' / ' + bn(pages.length); });
+}
+load();
+</script>
+</body>
+</html>

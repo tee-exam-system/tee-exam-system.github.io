@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ফলাফল-সিস্টেম — ফ্রি MCQ পরীক্ষা</title>
+<meta name="theme-color" content="#3B050E">
+<link rel="icon" href="assets/icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F6F1EC;--card:#fff;--ink:#2A1418;--mut:#7A6A6C;--line:#E7DCD2;--soft:#FBF6EF;--br:#6A0A18;--br2:#3B050E;--br3:#A8142A;--gold:#F2C44A;--gold2:#FFD21F;--ok:#0F7B4B;--okb:#E3F4EA;--warn:#9A5B00;--warnb:#FFF2D6;--bad:#B3261E;--badb:#FDE7E6;--sh:0 1px 2px rgba(60,20,20,.06),0 6px 18px rgba(60,20,20,.06)}
+html[data-theme=dark]{--bg:#150B0D;--card:#21141700;--card:#211417;--ink:#F3E9E4;--mut:#B9A7A6;--line:#3A2629;--soft:#2A1A1D;--okb:#123524;--ok:#6FD3A0;--warnb:#3A2A0C;--warn:#F2C44A;--badb:#3D1715;--bad:#FF9C94;--sh:0 1px 2px rgba(0,0,0,.4)}
+body{font-family:"Noto Sans Bengali","Roboto",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.hide{display:none!important}
+.en{font-family:"Roboto","Noto Sans Bengali",sans-serif}
+
+/* ── লগইন ── */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(800px 500px at 70% 0%,#A8142A,transparent 70%),linear-gradient(130deg,#2A0409,#6A0A18 60%,#3B050E)}
+.lg{width:100%;max-width:380px;background:var(--card);border-radius:18px;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lg .brand{justify-content:center;margin-bottom:14px}
+.lg h1{font-family:"Anek Bangla";font-size:26px;text-align:center;color:var(--br)}
+html[data-theme=dark] .lg h1{color:var(--gold)}
+.lg p{color:var(--mut);text-align:center;font-size:13px;margin:2px 0 18px}
+.lg label{display:block;font-weight:600;font-size:13px;margin:10px 0 4px}
+.lg .dev{margin-top:18px}
+
+/* ── কাঠামো ── */
+.brand{display:flex;align-items:center;gap:8px}
+.chip-logo{display:inline-flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:4px 10px 4px 4px}
+.chip-logo img.tee{height:30px;border-radius:50%}
+.chip-logo i{width:1px;height:20px;background:#ddd}
+.chip-logo img.tp{height:18px}
+#app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+#side{background:linear-gradient(180deg,#3B050E,#5A0915 60%,#2A0409);color:#F6E7D6;padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+#side .ttl{font-family:"Anek Bangla";font-size:21px;line-height:1.1;color:#fff;margin:12px 4px 2px}
+#side .sub{font-size:12px;color:#E2C9A8;margin:0 4px 14px}
+#side .pill{display:inline-block;font-size:10.5px;letter-spacing:1.5px;font-weight:700;color:#3B050E;background:linear-gradient(180deg,#FFE9A8,#F2C44A);border-radius:20px;padding:1px 9px;margin:0 4px 10px}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:#F6E7D6;font-weight:600;border:0;background:none;text-align:left;width:100%}
+.nav:hover{background:rgba(255,255,255,.07)}
+.nav.on{background:linear-gradient(90deg,rgba(242,196,74,.22),rgba(242,196,74,.06));color:#FFE9A8;box-shadow:inset 3px 0 0 #F2C44A}
+.nav svg{width:18px;height:18px;flex:none}
+#side .grow{flex:1}
+#side .me{font-size:12px;color:#E2C9A8;padding:8px 6px;border-top:1px solid rgba(255,255,255,.12)}
+#side .me button{background:none;border:0;color:#FFE9A8;cursor:pointer;text-decoration:underline;font-size:12px}
+.dev{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mut);justify-content:center}
+#side .dev{color:#C9B49E;justify-content:flex-start;padding:4px 6px}
+.devlink{font-weight:700;text-decoration:none}
+#main{padding:22px 26px 90px;min-width:0}
+#bottom{display:none}
+
+/* ── উপাদান ── */
+.ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ph h2{font-family:"Anek Bangla";font-size:25px;line-height:1.15}
+.ph .sp{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:14px}
+.card h3{font-size:15.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3 .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:var(--br);color:#fff}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--br3)}
+.btn.p{background:linear-gradient(180deg,#8A0E20,#6A0A18);color:#fff;border-color:#6A0A18}
+.btn.g{background:linear-gradient(180deg,#FFE48A,#F2C44A);color:#3B050E;border-color:#E0B43A}
+.btn.s{padding:4px 9px;font-size:12.5px;border-radius:8px}
+.btn.d{color:var(--bad)}
+.btn:disabled{opacity:.55;cursor:wait}
+input[type=text],input[type=email],input[type=number],input[type=datetime-local],input[type=date],input[type=search],select,textarea{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:9px;padding:8px 10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--br3);background:var(--card)}
+textarea{min-height:60px;resize:vertical}
+.grid{display:grid;gap:10px 14px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.fld label{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:3px}
+.fld small{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
+.fld.w2{grid-column:span 2}
+.chk{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:1px 9px;white-space:nowrap}
+.t-draft{background:var(--soft);color:var(--mut);border:1px solid var(--line)}
+.t-data{background:var(--warnb);color:var(--warn)}
+.t-pub{background:var(--okb);color:var(--ok)}
+.t-bad{background:var(--badb);color:var(--bad)}
+.msg{border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.msg.w{background:var(--warnb);color:var(--warn)}
+.msg.i{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.msg.b{background:var(--badb);color:var(--bad)}
+.muted{color:var(--mut)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* পরীক্ষার কার্ড */
+.exams{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;box-shadow:var(--sh);display:flex;gap:12px;position:relative;transition:transform .12s}
+.ex:hover{transform:translateY(-2px);border-color:var(--br3)}
+.ex .no{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;background:linear-gradient(140deg,#8A0E20,#3B050E)}
+.ex.mega .no{background:linear-gradient(140deg,#FFE48A,#E0A410);color:#3B050E}
+.ex .b{min-width:0;flex:1}
+.ex .s{font-weight:700;font-size:15px}
+.ex .c{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex .d{font-size:12.5px;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* সংখ্যার ঘর */
+.stats{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-bottom:14px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--sh)}
+.st b{display:block;font-size:22px;font-weight:800;line-height:1.2}
+.st span{font-size:12px;color:var(--mut);font-weight:600}
+.st.a b{color:var(--ok)}.st.l b{color:var(--warn)}.st.x b{color:var(--bad)}
+
+/* ট্যাব ও টেবিল */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 13px;cursor:pointer;font-weight:600;font-size:13px}
+.tab.on{background:var(--br);color:#fff;border-color:var(--br)}
+.tab em{font-style:normal;opacity:.75;margin-left:4px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th{background:var(--soft);font-size:12.5px;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.c,th.c{text-align:center;white-space:nowrap}
+td .sm{display:block;font-size:11.5px;color:var(--mut)}
+tr.w1 td{background:rgba(242,196,74,.10)}
+.rk{font-weight:800;color:var(--br3)}
+html[data-theme=dark] .rk{color:var(--gold)}
+.medal{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:11.5px;font-weight:800;color:#3B050E;background:radial-gradient(circle at 35% 30%,#FFF3C4,#FFD21F 45%,#D99A06)}
+.fl{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;margin:1px 2px 0 0;background:var(--warnb);color:var(--warn)}
+.fl.x{background:var(--badb);color:var(--bad)}
+.fl.o{background:var(--okb);color:var(--ok)}
+.acts{display:flex;gap:4px;flex-wrap:wrap}
+.more{text-align:center;padding:10px}
+
+/* জানালা ও বার্তা */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2A1418;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:99;max-width:92vw;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+#toast.err{background:#B3261E}
+#md{position:fixed;inset:0;background:rgba(20,5,8,.55);display:grid;place-items:center;z-index:50;padding:16px}
+#md .box{background:var(--card);border-radius:16px;padding:18px 20px;width:100%;max-width:560px;max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#md h3{font-size:17px;margin-bottom:10px}
+#md .ft{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.busy{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#F2C44A,transparent);background-size:50% 100%;animation:bz 1s linear infinite;z-index:100}
+@keyframes bz{from{background-position:-50% 0}to{background-position:150% 0}}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px 12px;margin-top:10px}
+
+/* ফোন */
+@media (max-width:820px){
+  #app{grid-template-columns:1fr}
+  #side{display:none}
+  #main{padding:14px 12px 96px}
+  #bottom{display:flex;position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,#4A0712,#2A0409);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40;justify-content:space-around}
+  #bottom .nav{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;width:auto;flex:1;align-items:center;text-align:center}
+  #bottom .nav.on{box-shadow:inset 0 2px 0 #F2C44A}
+  .ph h2{font-size:21px}
+  .fld.w2{grid-column:auto}
+  #topbar{display:flex!important}
+}
+#topbar{display:none;align-items:center;gap:10px;background:linear-gradient(120deg,#3B050E,#6A0A18);color:#fff;padding:10px 12px;margin:-14px -12px 14px}
+#topbar b{font-family:"Anek Bangla";font-size:18px;flex:1}
+#topbar button{background:none;border:0;color:#FFE9A8;font-size:12px}
+</style>
+</head>
+<body>
+<div id="busy" class="busy hide"></div>
+
+<!-- লগইন -->
+<div id="login" class="hide">
+  <div class="lg">
+    <div class="brand"><span class="chip-logo"><img class="tee" src="assets/tee-logo.png" alt=""><i></i><img class="tp" src="assets/tp-logo.webp" alt=""></span></div>
+    <h1>ফলাফল-সিস্টেম</h1>
+    <p>ফ্রি MCQ পরীক্ষা · শুধু অনুমোদিত ব্যবহারকারী</p>
+    <div id="lg1">
+      <label for="lgEmail">ইমেইল</label>
+      <input type="email" id="lgEmail" autocomplete="email" placeholder="you@gmail.com">
+      <div style="margin-top:12px"><button class="btn p" id="lgSend" style="width:100%;justify-content:center">লগইন কোড পাঠান</button></div>
+    </div>
+    <div id="lg2" class="hide">
+      <label for="lgCode">ইমেইলে আসা ৬ অঙ্কের কোড</label>
+      <input type="text" id="lgCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••">
+      <div style="margin-top:12px"><button class="btn p" id="lgVerify" style="width:100%;justify-content:center">ঢুকুন</button></div>
+      <p style="margin-top:10px"><a href="#" id="lgBack">অন্য ইমেইল</a></p>
+    </div>
+    <div class="dev">Developed By: <a class="devlink" href="https://m-ashraful.github.io/" target="_blank" rel="noopener">Md. Ashraful Islam</a></div>
+  </div>
+</div>
+
+<!-- অ্যাপ -->
+<div id="app" class="hide">
+  <aside id="side">
+    <span class="chip-logo"><img class="tee" src="assets/tee-logo.png" alt=""><i></i><img class="tp" src="assets/tp-logo.webp" alt=""></span>
+    <div class="ttl">ফলাফল-সিস্টেম</div>
+    <div class="sub">ফ্রি MCQ পরীক্ষা · এসএসসি ২০২৭ ও ২০২৮</div>
+    <span class="pill">CONTROL PANEL</span>
+    <div id="navSide"></div>
+    <div class="grow"></div>
+    <div class="me"><span id="meName"></span><br><button id="themeBtn">থিম বদলান</button> · <button id="outBtn">বের হোন</button></div>
+    <div class="dev">Developed By: <a class="devlink" href="https://m-ashraful.github.io/" target="_blank" rel="noopener">Md. Ashraful Islam</a></div>
+  </aside>
+  <main id="main">
+    <div id="topbar"><span class="chip-logo"><img class="tee" src="assets/tee-logo.png" alt=""></span><b>ফলাফল-সিস্টেম</b><button id="themeBtn2">থিম</button></div>
+    <div id="page"></div>
+    <div class="dev" style="margin-top:30px">Developed By: <a class="devlink" href="https://m-ashraful.github.io/" target="_blank" rel="noopener">Md. Ashraful Islam</a></div>
+  </main>
+  <nav id="bottom"></nav>
+</div>
+
+<div id="md" class="hide"><div class="box" id="mdBox"></div></div>
+<div id="toast"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwemdMvjng4OvOSfUVgVeFSQkCH5JtWgkil20tewqNPD6l8XzRdspUo8ngQDZNmW0yodQ/exec';
+const K = { auth: 'mq_auth', theme: 'mq_theme', email: 'mq_email' };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const BN = '০১২৩৪৫৬৭৮৯';
+const bn = (v) => String(v == null ? '' : v).replace(/\d/g, (d) => BN[d]);
+const bnN = (n) => bn(Number(n || 0).toLocaleString('en-IN'));
+const pad2 = (n) => bn(String(n).padStart(2, '0'));
+
+/* ── থিম ── */
+function applyTheme(t) { document.documentElement.dataset.theme = t; }
+applyTheme(localStorage.getItem(K.theme) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+function toggleTheme() { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem(K.theme, t); applyTheme(t); }
+
+/* ── সার্ভার ── */
+let busyN = 0;
+function busy(on) { busyN += on ? 1 : -1; $('busy').classList.toggle('hide', busyN <= 0); }
+async function call(fn, ...args) {
+  busy(true);
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 150000);
+  try {
+    const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn, args, auth: localStorage.getItem(K.auth) || '' }), signal: ctl.signal });
+    const j = await r.json();
+    if (!j.ok) {
+      if (j.error === 'AUTH_REQUIRED') { localStorage.removeItem(K.auth); showLogin(); throw new Error('আবার লগইন করুন।'); }
+      throw new Error(j.error);
+    }
+    return j.data;
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('সার্ভার অনেকক্ষণ উত্তর দেয়নি — কাজটা হয়তো হয়ে গেছে, পাতা আবার খুলে দেখুন।');
+    throw e;
+  } finally { clearTimeout(tm); busy(false); }
+}
+function toast(t, err) { const x = $('toast'); x.textContent = t; x.className = 'on' + (err ? ' err' : ''); clearTimeout(x._t); x._t = setTimeout(() => x.className = '', err ? 6000 : 3000); }
+async function run(btn, fn) {
+  if (btn) btn.disabled = true;
+  try { return await fn(); } catch (e) { toast(e.message, true); } finally { if (btn) btn.disabled = false; }
+}
+
+/* ── জানালা ── */
+function modal(html) { $('mdBox').innerHTML = html; $('md').classList.remove('hide'); }
+function closeModal() { $('md').classList.add('hide'); }
+$('md').addEventListener('click', (e) => { if (e.target.id === 'md') closeModal(); });
+
+/* ── সময় (ঢাকা) ── */
+const MON = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const MON_S = ['জানু.', 'ফেব্রু.', 'মার্চ', 'এপ্রি.', 'মে', 'জুন', 'জুলাই', 'আগ.', 'সেপ্টে.', 'অক্টো.', 'নভে.', 'ডিসে.'];
+const DAY = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+function dk(ms) { // ঢাকার সময়ের অংশ
+  const d = new Date(Number(ms) + 6 * 3600000);
+  return { y: d.getUTCFullYear(), mo: d.getUTCMonth(), d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), s: d.getUTCSeconds(), wd: d.getUTCDay() };
+}
+function period(h) { return h < 4 ? 'রাত' : h < 12 ? 'সকাল' : h < 15 ? 'দুপুর' : h < 18 ? 'বিকাল' : h < 20 ? 'সন্ধ্যা' : 'রাত'; }
+function clock(ms, withSec) { const p = dk(ms); const h12 = p.h % 12 || 12; return period(p.h) + ' ' + bn(h12) + ':' + pad2(p.mi) + (withSec === false ? '' : ':' + pad2(p.s)); }
+function stamp(ms, ymd) { // পরীক্ষার দিনের হলে শুধু সময়, নইলে তারিখসহ
+  const p = dk(ms); const same = ymd && ymd === p.y + '-' + String(p.mo + 1).padStart(2, '0') + '-' + String(p.d).padStart(2, '0');
+  return (same ? '' : bn(p.d) + ' ' + MON_S[p.mo] + ' ') + clock(ms);
+}
+function dateBn(ymd, noYear) { const a = String(ymd || '').split('-').map(Number); if (!a[0]) return ''; const d = new Date(Date.UTC(a[0], a[1] - 1, a[2])); return bn(a[2]) + ' ' + MON[a[1] - 1] + (noYear ? '' : ' ' + bn(a[0])) + ', ' + DAY[d.getUTCDay()]; }
+function localBn(s) { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); if (!m) return '—'; const h = +m[4]; return bn(+m[3]) + ' ' + MON_S[+m[2] - 1] + ' ' + period(h) + ' ' + bn(h % 12 || 12) + ':' + bn(m[5]); }
+function ago(ms) { if (!ms) return '—'; const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'এইমাত্র' : m < 60 ? bn(m) + ' মিনিট আগে' : m < 1440 ? bn(Math.round(m / 60)) + ' ঘণ্টা আগে' : stamp(ms); }
+
+/* ── লগইন ── */
+function showLogin() { $('app').classList.add('hide'); $('login').classList.remove('hide'); $('lgEmail').value = localStorage.getItem(K.email) || ''; }
+$('lgSend').onclick = () => run($('lgSend'), async () => {
+  const e = $('lgEmail').value.trim(); if (!e) return toast('ইমেইল লিখুন', true);
+  await call('apiSendCode', e); localStorage.setItem(K.email, e);
+  $('lg1').classList.add('hide'); $('lg2').classList.remove('hide'); $('lgCode').focus();
+  toast('তালিকায় থাকলে ইমেইলে কোড গেছে');
+});
+$('lgVerify').onclick = () => run($('lgVerify'), async () => {
+  const dev = (navigator.userAgentData && navigator.userAgentData.platform || navigator.platform || '') + ' · ' + (/(Edg|Chrome|Firefox|Safari)\/[\d]+/.exec(navigator.userAgent) || [''])[0];
+  const t = await call('apiVerifyCode', $('lgEmail').value.trim(), $('lgCode').value.trim(), dev);
+  localStorage.setItem(K.auth, t); $('lgCode').value = ''; start();
+});
+$('lgCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('lgVerify').click(); });
+$('lgEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('lgSend').click(); });
+$('lgBack').onclick = (e) => { e.preventDefault(); $('lg2').classList.add('hide'); $('lg1').classList.remove('hide'); };
+$('outBtn').onclick = async () => { try { await call('apiLogout'); } catch (e) {} localStorage.removeItem(K.auth); showLogin(); };
+$('themeBtn').onclick = toggleTheme; $('themeBtn2').onclick = toggleTheme;
+
+/* ── পাতা ও নেভিগেশন ── */
+const IC = {
+  exams: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  winners: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+};
+const PAGES = [['exams', 'পরীক্ষা'], ['winners', 'বিজয়ী ও টাকা'], ['people', 'পরীক্ষার্থী'], ['settings', 'সেটিংস']];
+let S = { boot: null, page: 'exams', exam: null };
+function nav() {
+  const h = PAGES.map(([k, t]) => `<button class="nav${S.page === k ? ' on' : ''}" data-p="${k}">${IC[k]}<span>${t}</span></button>`).join('');
+  $('navSide').innerHTML = h; $('bottom').innerHTML = h;
+  document.querySelectorAll('.nav').forEach((b) => b.onclick = () => go(b.dataset.p));
+}
+function go(p, arg) { S.page = p; location.hash = p + (arg ? '/' + arg : ''); nav(); render(); window.scrollTo(0, 0); }
+function render() {
+  const [p, arg] = location.hash.slice(1).split('/');
+  S.page = PAGES.some((x) => x[0] === p) || p === 'exam' ? p : 'exams';
+  nav();
+  if (S.page === 'exam' && arg) return pageExam(arg);
+  ({ exams: pageExams, winners: pageWinners, people: pagePeople, settings: pageSettings })[S.page === 'exam' ? 'exams' : S.page]();
+}
+window.addEventListener('hashchange', render);
+
+async function start() {
+  if (!localStorage.getItem(K.auth)) return showLogin();
+  try {
+    S.boot = await call('apiBoot');
+    $('login').classList.add('hide'); $('app').classList.remove('hide');
+    $('meName').textContent = S.boot.me.name + ' · ' + S.boot.me.email;
+    render();
+  } catch (e) { if (localStorage.getItem(K.auth)) { toast(e.message, true); $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; $('app').classList.remove('hide'); } }
+}
+
+/* ══════════════ পরীক্ষার তালিকা ══════════════ */
+function stTag(x) {
+  if (x.status === 'published') return '<span class="tag t-pub">প্রকাশিত' + (x.version > 1 ? ' · সংস্করণ ' + bn(x.version) : '') + '</span>';
+  if (x.importedAt) return '<span class="tag t-data">উত্তর তোলা হয়েছে</span>';
+  return '<span class="tag t-draft">খসড়া</span>';
+}
+async function pageExams() {
+  const b = S.boot;
+  const list = b.exams;
+  const pub = list.filter((x) => x.status === 'published').length;
+  $('page').innerHTML = `
+  <div class="ph"><h2>পরীক্ষা</h2><span class="sp"></span><button class="btn p" id="newEx">+ নতুন পরীক্ষা</button></div>
+  <div class="stats">
+    <div class="st"><b>${bn(list.length)}</b><span>মোট পরীক্ষা</span></div>
+    <div class="st a"><b>${bn(pub)}</b><span>ফলাফল প্রকাশিত</span></div>
+    <div class="st l"><b>${bn(list.filter((x) => x.importedAt && x.status !== 'published').length)}</b><span>প্রকাশের অপেক্ষায়</span></div>
+  </div>
+  <div class="exams">${list.map((x) => `
+    <div class="ex${x.mega ? ' mega' : ''}" data-id="${esc(x.id)}">
+      <div class="no">${pad2(x.no)}</div>
+      <div class="b"><div class="s">${esc(x.subject)}${x.mega ? ' · মেগা' : ''}</div><div class="c">${esc(x.chapters || '')}</div>
+      <div class="d"><span class="muted">${esc(dateBn(x.date, true))}</span>${stTag(x)}</div>
+      ${x.counts && x.counts.raw ? `<div class="d muted">জমা ${bn(x.counts.raw)} · সময়মতো ${bn(x.counts.ontime)} · সর্বোচ্চ ${bn(x.counts.top)}</div>` : ''}</div>
+    </div>`).join('')}</div>`;
+  document.querySelectorAll('.ex').forEach((el) => el.onclick = () => go('exam', el.dataset.id));
+  $('newEx').onclick = () => newExam();
+}
+function newExam() {
+  const s = S.boot.settings, nx = Math.max(0, ...S.boot.exams.map((x) => x.no)) + 1;
+  const today = new Date(Date.now() + 6 * 3600000).toISOString().slice(0, 10);
+  modal(`<h3>নতুন পরীক্ষা</h3><p class="muted" style="margin-bottom:10px">বাইরের বা পুরোনো পরীক্ষাও এভাবে যোগ করা যায় — উত্তর পরে তোলা হবে।</p>
+  <div class="grid">
+    <div class="fld"><label>পরীক্ষা নম্বর</label><input type="number" id="nNo" value="${nx}"></div>
+    <div class="fld"><label>বিষয়</label><input type="text" id="nSub" placeholder="গণিত"></div>
+    <div class="fld"><label>পরীক্ষার তারিখ</label><input type="date" id="nDate" value="${today}"></div>
+    <div class="fld"><label>প্রশ্ন প্রকাশের সময়</label><input type="datetime-local" id="nPub" value="${today}T${esc(s.defaultTime)}"></div>
+  </div>
+  <div class="ft"><button class="btn" onclick="closeModal()">বাতিল</button><button class="btn p" id="nSave">তৈরি করুন</button></div>`);
+  $('nSave').onclick = () => run($('nSave'), async () => {
+    const d = await call('apiExamSave', { no: $('nNo').value, subject: $('nSub').value, date: $('nDate').value, publishAt: $('nPub').value, batch: s.batchLine, windowMin: s.windowMin, maxScore: s.maxScore });
+    closeModal(); S.boot = await call('apiBoot'); go('exam', d.exam.id);
+  });
+}
+
+/* ══════════════ একটা পরীক্ষা ══════════════ */
+let E = null, tabK = 'win', exQ = '', shown = 100;
+async function pageExam(id) {
+  $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
+  try { E = await call('apiExam', id); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
+  drawExam();
+}
+function drawExam() {
+  const x = E.exam, st = E.stats, s = E.settings;
+  const lastWin = E.ontime.filter((e) => e.w).slice(-1)[0];
+  const skipped = E.ontime.filter((e) => E.skipped.includes(e.k));
+  const pubTxt = x.status === 'published' ? `প্রকাশিত · সংস্করণ ${bn(x.version)} · ${ago(x.publishedAt)}` : 'এখনো প্রকাশ হয়নি';
+  $('page').innerHTML = `
+  <div class="ph"><button class="btn s" onclick="go('exams')">← সব পরীক্ষা</button><h2>পরীক্ষা ${pad2(x.no)} · ${esc(x.subject)}</h2>${stTag(x)}<span class="sp"></span>
+    <button class="btn" id="pPrint">🖨 ফলাফলের পাতা / PDF</button>
+    ${x.status === 'published' ? `<button class="btn" id="pUnpub">প্রকাশ ফেরত</button>` : ''}
+    <button class="btn g" id="pPub">${x.status === 'published' ? 'আবার প্রকাশ (নতুন সংস্করণ)' : '✔ ফলাফল প্রকাশ'}</button></div>
+  ${x.status === 'published' && x.changedAfterPublish ? '<div class="msg w">প্রকাশের পরে কিছু বদলেছে — নতুন সংস্করণ হিসেবে আবার প্রকাশ করুন।</div>' : ''}
+  <div class="msg i">${esc(pubTxt)} · উত্তর তোলা: ${x.importedAt ? ago(x.importedAt) + ' (' + esc(x.importFrom || '') + ')' : 'এখনো হয়নি'}${x.importBadCount ? ' · <b>' + bn(x.importBadCount) + 'টা সারি পড়া যায়নি</b> (সারি ' + bn((x.importBad || []).join(', ')) + ')' : ''}</div>
+
+  <div class="stats">
+    <div class="st"><b>${bnN(st.raw)}</b><span>মোট জমা</span></div>
+    <div class="st a"><b>${bnN(st.ontime)}</b><span>সময়মতো (${bn(x.windowMin || s.windowMin)} মিনিটে)</span></div>
+    <div class="st l"><b>${bnN(st.late)}</b><span>নির্ধারিত সময়ের পরে</span></div>
+    <div class="st x"><b>${bnN(st.excluded)}</b><span>বাদ পড়া</span></div>
+    <div class="st"><b>${bn(st.top)}/${bn(st.max)}</b><span>সর্বোচ্চ প্রাপ্ত নম্বর</span></div>
+    <div class="st"><b>${bn(st.winners)}</b><span>নগদ পুরস্কার</span></div>
+  </div>
+
+  ${skipped.length ? `<div class="msg w"><b>দেখে নিন:</b> ${bn(skipped.length)} জনের নম্বর বিজয়ীদের সমান বা বেশি, কিন্তু নাম/স্কুল অসম্পূর্ণ বা মোবাইল ভুল বলে নগদ পুরস্কারে ধরা হয়নি। "যোগ্য ধরুন" চাপলে তাঁরা বিজয়ী হবেন।<div style="margin-top:6px">${skipped.map((e) => `<div class="row" style="margin:3px 0"><b class="en">${esc(e.n)}</b> · <span class="en">${esc(e.s)}</span> · ${bn(e.sc)}/${bn(e.mx)} · ${stamp(e.t, x.date)} · ${e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('')} <button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":1}'>যোগ্য ধরুন</button> <button class="btn s" data-ed="${esc(e.k)}">✎ নাম ঠিক করুন</button></div>`).join('')}</div></div>` : ''}
+
+  <div class="card"><h3><span class="n">১</span>উত্তর কোথা থেকে</h3>
+    <div class="grid">
+      <div class="fld w2"><label>উত্তরের গুগল শিটের লিংক</label><input type="text" id="fSrc" class="en" value="${esc(x.sourceUrl || '')}" placeholder="https://docs.google.com/spreadsheets/d/…"><small>শিটের Share-এ tploffice02@gmail.com-কে Viewer করে দিতে হবে।</small></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="fCheck">লিংক যাচাই ও কলাম মেলান</button>
+      <button class="btn p" id="fImport">⟳ শিট থেকে উত্তর আনুন</button>
+      <span class="muted">অথবা</span>
+      <label class="btn" style="cursor:pointer">📄 ফাইল তুলুন (CSV)<input type="file" id="fFile" accept=".csv,text/csv" hidden></label>
+    </div>
+    <div id="srcInfo"></div>
+  </div>
+
+  <div class="card"><h3><span class="n">২</span>পরীক্ষার তথ্য ও সময়</h3>
+    <div class="grid">
+      <div class="fld"><label>পরীক্ষা নম্বর</label><input type="number" id="fNo" value="${esc(x.no)}"></div>
+      <div class="fld"><label>বিষয়</label><input type="text" id="fSub" value="${esc(x.subject)}"></div>
+      <div class="fld w2"><label>অধ্যায় / সিলেবাস</label><input type="text" id="fCh" value="${esc(x.chapters || '')}"></div>
+      <div class="fld"><label>পরীক্ষার তারিখ</label><input type="date" id="fDate" value="${esc(x.date)}"></div>
+      <div class="fld"><label>প্রশ্ন প্রকাশের সময়</label><input type="datetime-local" id="fPub" value="${esc(x.publishAt || '')}"><small>এর আগের জমা পরীক্ষামূলক ধরে বাদ</small></div>
+      <div class="fld"><label>পুরস্কারের সময়সীমা (মিনিট)</label><input type="number" id="fWin" value="${esc(x.windowMin || s.windowMin)}"><small>এর পরের জমা "নির্ধারিত সময়ের পরে"</small></div>
+      <div class="fld"><label>জমার শেষ সময়</label><input type="datetime-local" id="fLate" value="${esc(x.lateUntil || '')}"><small>এর পরের জমা ফলাফলে আসবে না</small></div>
+      <div class="fld"><label>ফলাফল প্রকাশের তারিখ</label><input type="date" id="fRes" value="${esc(x.resultDate || '')}"></div>
+      <div class="fld"><label>পূর্ণমান</label><input type="number" id="fMax" value="${esc(x.maxScore || s.maxScore)}"></div>
+      <div class="fld w2"><label>ব্যাচ</label><input type="text" id="fBatch" value="${esc(x.batch || s.batchLine)}"></div>
+      <div class="fld w2"><label>পরের পরীক্ষা (ফলাফলের পাতায়)</label><input type="text" id="fNext" value="${esc(x.nextExam || '')}" placeholder="২৮ নভেম্বর, শনিবার — বাংলা ১ম পত্র"></div>
+      <div class="fld"><label>&nbsp;</label><label class="chk"><input type="checkbox" id="fMega" ${x.mega ? 'checked' : ''}> মেগা পরীক্ষা</label></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn p" id="fSave">সেভ করুন</button><span class="muted">সেভ করলে সঙ্গে সঙ্গে নতুন করে হিসাব হয়।</span>
+      ${x.status !== 'published' ? '<span class="sp" style="flex:1"></span><button class="btn s d" id="fDel">পরীক্ষাটা মুছুন</button>' : ''}</div>
+  </div>
+
+  <div class="card"><h3><span class="n">৩</span>ফলাফল</h3>
+    <div class="tabs" id="tabs"></div>
+    <div class="row" style="margin-bottom:10px"><input type="search" id="fq" placeholder="নাম, স্কুল বা মোবাইল দিয়ে খুঁজুন" value="${esc(exQ)}" style="max-width:360px"></div>
+    <div id="tbl"></div>
+  </div>`;
+
+  $('pPrint').onclick = () => window.open('print/#' + encodeURIComponent(x.id), '_blank');
+  $('pPub').onclick = () => {
+    modal(`<h3>ফলাফল প্রকাশ করবেন?</h3><p>সময়মতো ${bnN(st.ontime)} জন, পরে ${bnN(st.late)} জন, বাদ ${bnN(st.excluded)}টা জমা। নগদ পুরস্কার ${bn(st.winners)} জন — তাঁদের নাম "বিজয়ী ও টাকা" পাতায় যাবে।</p>
+      <div class="ft"><button class="btn" onclick="closeModal()">না</button><button class="btn g" id="okPub">হ্যাঁ, প্রকাশ করুন</button></div>`);
+    $('okPub').onclick = () => run($('okPub'), async () => { E = await call('apiPublish', x.id); closeModal(); refreshBoot(); drawExam(); toast('প্রকাশ হয়েছে — এখন ফলাফলের পাতা থেকে PDF নিন'); });
+  };
+  if ($('pUnpub')) $('pUnpub').onclick = () => run($('pUnpub'), async () => { E = await call('apiUnpublish', x.id); refreshBoot(); drawExam(); });
+  $('fSave').onclick = () => run($('fSave'), async () => { E = await call('apiExamSave', collect()); refreshBoot(); drawExam(); toast('সেভ হয়েছে'); });
+  if ($('fDel')) $('fDel').onclick = () => { if (confirm('পরীক্ষা ' + bn(x.no) + ' আর এর তোলা উত্তর মুছে যাবে। নিশ্চিত?')) run($('fDel'), async () => { S.boot = await call('apiExamDelete', x.id); go('exams'); }); };
+  $('fImport').onclick = () => run($('fImport'), async () => {
+    const src = $('fSrc').value.trim();
+    if (src !== (x.sourceUrl || '')) E = await call('apiExamSave', collect());
+    E = await call('apiImport', x.id); refreshBoot(); drawExam(); toast(bn(E.stats.raw) + 'টা উত্তর আনা হয়েছে');
+  });
+  $('fCheck').onclick = () => run($('fCheck'), async () => checkSource());
+  $('fFile').onchange = (ev) => importFile(ev.target.files[0]);
+  $('fq').oninput = (ev) => { exQ = ev.target.value.trim().toLowerCase(); shown = 100; drawTable(); $('fq').focus(); };
+  bindRowActions($('page'));
+  drawTable();
+}
+function collect() {
+  const x = E.exam;
+  return { id: x.id, no: $('fNo').value, subject: $('fSub').value, chapters: $('fCh').value, date: $('fDate').value, publishAt: $('fPub').value, windowMin: $('fWin').value,
+    lateUntil: $('fLate').value, resultDate: $('fRes').value, maxScore: $('fMax').value, batch: $('fBatch').value, nextExam: $('fNext').value, mega: $('fMega').checked,
+    sourceUrl: $('fSrc').value.trim(), sourceTab: x.sourceTab || '', map: x.map || null };
+}
+async function refreshBoot() { try { S.boot = await call('apiBoot'); } catch (e) {} }
+
+const FN = { ts: 'জমার সময়', score: 'প্রাপ্ত নম্বর', name: 'নাম', school: 'স্কুল', mobile: 'মোবাইল', batch: 'ব্যাচ/শ্রেণি' };
+async function checkSource() {
+  const url = $('fSrc').value.trim(); if (!url) return toast('লিংক দিন', true);
+  const info = await call('apiSourceInfo', url, E.exam.sourceTab || '');
+  const map = Object.assign({}, info.map, E.exam.map || {});
+  const opt = (k) => `<div class="fld"><label>${FN[k]}</label><select data-mk="${k}"><option value="-1">— নেই —</option>${info.header.map((h, i) => `<option value="${i}"${map[k] === i ? ' selected' : ''}>${bn(i + 1)}. ${esc(h.slice(0, 40))}</option>`).join('')}</select></div>`;
+  $('srcInfo').innerHTML = `<div class="msg i" style="margin-top:12px">✔ শিট পাওয়া গেছে: <b>${esc(info.title)}</b> · ${bnN(info.rows)}টা সারি
+    ${info.tabs.length > 1 ? `<div class="fld" style="margin-top:8px;max-width:300px"><label>ট্যাব</label><select id="fTab">${info.tabs.map((t) => `<option${t === info.tab ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>` : ''}
+    <div class="map">${Object.keys(FN).map(opt).join('')}</div>
+    <div class="row" style="margin-top:10px"><button class="btn p" id="fMapSave">এই মিল সেভ করুন</button><span class="muted">সিস্টেম নিজে চিনেছে; ভুল হলে বদলে দিন।</span></div></div>`;
+  $('fMapSave').onclick = () => run($('fMapSave'), async () => {
+    const m = {}; document.querySelectorAll('[data-mk]').forEach((s) => m[s.dataset.mk] = Number(s.value));
+    E.exam.map = m; if ($('fTab')) E.exam.sourceTab = $('fTab').value;
+    E = await call('apiExamSave', collect()); drawExam(); toast('সেভ হয়েছে — এখন "শিট থেকে উত্তর আনুন" চাপুন');
+  });
+}
+
+/* CSV পড়া (উদ্ধৃতিচিহ্ন, কমা, নতুন লাইন সামলে) */
+function parseCSV(t) {
+  const rows = []; let row = [], cell = '', i = 0, inQ = false;
+  t = t.replace(/^﻿/, '');
+  while (i < t.length) {
+    const c = t[i];
+    if (inQ) { if (c === '"') { if (t[i + 1] === '"') { cell += '"'; i++; } else inQ = false; } else cell += c; }
+    else if (c === '"') inQ = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+    i++;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((c) => String(c).trim()));
+}
+async function importFile(f) {
+  if (!f) return;
+  await run(null, async () => {
+    const rows = parseCSV(await f.text());
+    if (rows.length < 2) throw new Error('ফাইলে কোনো উত্তর নেই।');
+    const maxCol = 12; // প্রশ্নের উত্তরগুলো লাগে না — শুধু প্রথম দিকের কলাম পাঠাই
+    const h = rows[0];
+    const keep = h.length > maxCol ? Math.max(maxCol, ...Object.values(E.exam.map || {}).map((v) => v + 1)) : h.length;
+    E = await call('apiImportRows', E.exam.id, h.slice(0, keep), rows.slice(1).map((r) => r.slice(0, keep)), f.name);
+    refreshBoot(); drawExam(); toast(bn(E.stats.raw) + 'টা উত্তর ফাইল থেকে তোলা হয়েছে');
+  });
+}
+
+function rowsFor(k) {
+  if (k === 'win') return E.ontime.filter((e) => e.w);
+  if (k === 'on') return E.ontime;
+  if (k === 'late') return E.late;
+  if (k === 'x') return E.excluded;
+  if (k === 'f') return E.ontime.concat(E.late).filter((e) => e.f.length || e.fo || e.ed);
+  return [];
+}
+function drawTable() {
+  const T = [['win', 'বিজয়ী'], ['on', 'সময়মতো'], ['late', 'সময়ের পরে'], ['f', 'দেখার মতো'], ['x', 'বাদ পড়া']];
+  $('tabs').innerHTML = T.map(([k, t]) => `<button class="tab${tabK === k ? ' on' : ''}" data-t="${k}">${t}<em>${bn(rowsFor(k).length)}</em></button>`).join('');
+  document.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => { tabK = b.dataset.t; shown = 100; drawTable(); });
+  let rows = rowsFor(tabK);
+  if (exQ) rows = rows.filter((e) => (e.n + ' ' + e.s + ' ' + e.m + ' ' + e.rn + ' ' + e.rs).toLowerCase().includes(exQ));
+  const x = E.exam;
+  if (!rows.length) { $('tbl').innerHTML = '<div class="msg i">' + (E.stats.raw ? 'এখানে কেউ নেই।' : 'এখনো উত্তর তোলা হয়নি — উপরে "শিট থেকে উত্তর আনুন" চাপুন।') + '</div>'; return; }
+  const isX = tabK === 'x';
+  const body = rows.slice(0, shown).map((e) => `<tr class="${e.w ? 'w1' : ''}">
+    <td class="c">${e.w ? '<span class="medal">' + bn(e.w) + '</span>' : (e.r ? '<span class="rk">' + bn(e.r) + '</span>' : '—')}</td>
+    <td><span class="en">${esc(e.n)}</span>${e.ed ? ' <span class="fl o">সংশোধিত</span>' : ''}${e.n !== e.rn && !e.ed ? '<span class="sm en">লেখা ছিল: ' + esc(e.rn) + '</span>' : ''}</td>
+    <td><span class="en">${esc(e.s)}</span></td>
+    <td class="c">${e.b ? 'এসএসসি ' + esc(e.b) : ''}</td>
+    <td class="c"><b>${bn(e.sc)}</b>/${bn(e.mx)}</td>
+    <td class="c" style="white-space:nowrap">${stamp(e.t, x.date)}</td>
+    <td class="en" style="white-space:nowrap"><a href="tel:${esc(e.m)}">${esc(e.m)}</a></td>
+    <td>${isX ? '<span class="fl x">' + esc(e.wt) + '</span>' : e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('') + (e.fo === 'ok' ? '<span class="fl o">যোগ্য ধরা হয়েছে</span>' : e.fo === 'no' ? '<span class="fl x">পুরস্কার থেকে বাদ</span>' : e.fo === 'inc' ? '<span class="fl o">হাতে রাখা</span>' : '')}</td>
+    <td><div class="acts">${isX
+      ? (['manual', 'junk', 'dup'].includes(e.why) ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='${e.why === 'manual' ? '{"x":0}' : '{"inc":1}'}'>ফিরিয়ে আনুন</button>` : '<span class="muted" style="font-size:12px">সময় বদলালে ঠিক হবে</span>')
+      : `<button class="btn s" data-ed="${esc(e.k)}">✎</button>${e.el ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"no":1}' title="নগদ পুরস্কারের জন্য বিবেচিত নয়">পুরস্কার নয়</button>` : `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":1}'>যোগ্য ধরুন</button>`}${e.fo ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":0,"no":0,"inc":0}'>আগের মতো</button>` : ''}<button class="btn s d" data-ov="${esc(e.k)}" data-o='{"x":1}'>বাদ</button>`}</div></td>
+  </tr>`).join('');
+  $('tbl').innerHTML = `<div class="tw"><table><thead><tr><th class="c">মেধাক্রম</th><th>নাম</th><th>স্কুল</th><th class="c">শ্রেণি</th><th class="c">নম্বর</th><th class="c">জমার সময়</th><th>মোবাইল</th><th>${isX ? 'কেন বাদ' : 'লক্ষ করুন'}</th><th></th></tr></thead><tbody>${body}</tbody></table></div>
+    ${rows.length > shown ? `<div class="more"><button class="btn" id="moreBtn">আরও দেখুন (বাকি ${bn(rows.length - shown)})</button></div>` : ''}`;
+  if ($('moreBtn')) $('moreBtn').onclick = () => { shown += 300; drawTable(); };
+  bindRowActions($('tbl'));
+}
+function findRow(k) { return E.ontime.concat(E.late, E.excluded).find((e) => e.k === k); }
+function bindRowActions(root) {
+  root.querySelectorAll('[data-ov]').forEach((b) => b.onclick = () => run(b, async () => {
+    E = await call('apiOverride', E.exam.id, b.dataset.ov, JSON.parse(b.dataset.o)); drawExam();
+  }));
+  root.querySelectorAll('[data-ed]').forEach((b) => b.onclick = () => {
+    const e = findRow(b.dataset.ed);
+    modal(`<h3>নাম ও স্কুল ঠিক করুন</h3><p class="muted en" style="margin-bottom:8px">পরীক্ষার্থী লিখেছিল: ${esc(e.rn)} · ${esc(e.rs)}</p>
+      <div class="fld"><label>নাম</label><input type="text" id="eN" class="en" value="${esc(e.n)}"></div>
+      <div class="fld" style="margin-top:8px"><label>স্কুল</label><input type="text" id="eS" class="en" value="${esc(e.s)}"></div>
+      <div class="ft"><button class="btn" id="eReset">যেমন লিখেছিল</button><span style="flex:1"></span><button class="btn" onclick="closeModal()">বাতিল</button><button class="btn p" id="eSave">সেভ</button></div>`);
+    $('eSave').onclick = () => run($('eSave'), async () => { E = await call('apiOverride', E.exam.id, e.k, { n: $('eN').value, s: $('eS').value }); closeModal(); drawExam(); });
+    $('eReset').onclick = () => run($('eReset'), async () => { E = await call('apiOverride', E.exam.id, e.k, { n: '', s: '' }); closeModal(); drawExam(); });
+  });
+}
+
+/* ══════════════ বিজয়ী ও টাকা ══════════════ */
+let W = [];
+async function pageWinners() {
+  $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
+  try { W = await call('apiWinners'); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
+  drawWinners();
+}
+function drawWinners() {
+  const live = W.filter((w) => w.status !== 'বাতিল');
+  const sum = (a) => a.reduce((t, w) => t + Number(w.amount || 0), 0);
+  const paid = live.filter((w) => w.status === 'পাঠানো'), due = live.filter((w) => w.status !== 'পাঠানো');
+  const groups = {};
+  W.forEach((w) => { const k = w.examId; (groups[k] = groups[k] || []).push(w); });
+  $('page').innerHTML = `<div class="ph"><h2>বিজয়ী ও টাকা</h2><span class="sp"></span><button class="btn" id="cpDue">📋 বাকিদের নম্বর কপি</button></div>
+  <div class="stats">
+    <div class="st"><b>${bn(live.length)}</b><span>মোট বিজয়ী</span></div>
+    <div class="st a"><b>৳${bnN(sum(paid))}</b><span>পাঠানো হয়েছে (${bn(paid.length)} জন)</span></div>
+    <div class="st l"><b>৳${bnN(sum(due))}</b><span>বাকি (${bn(due.length)} জন)</span></div>
+  </div>
+  ${!W.length ? '<div class="msg i">ফলাফল প্রকাশ করলে বিজয়ীরা এখানে আসবে। প্রত্যেককে ফোন করে বিকাশ/নগদ নম্বর জেনে টাকা পাঠিয়ে এখানে লিখে রাখুন।</div>' : ''}
+  ${Object.keys(groups).map((k) => { const g = groups[k], ex = g[0].exam || {}; return `<div class="card"><h3>পরীক্ষা ${pad2(ex.no || 0)} · ${esc(ex.subject || '')} <span class="muted" style="font-weight:500">· ${esc(dateBn(ex.date, true))}</span></h3>
+    <div class="tw"><table><thead><tr><th class="c">স্থান</th><th>নাম ও স্কুল</th><th>মোবাইল</th><th class="c">টাকা</th><th>মাধ্যম</th><th>যে নম্বরে পাঠানো</th><th>অবস্থা</th><th>লেনদেন নম্বর / নোট</th><th></th></tr></thead><tbody>
+    ${g.map((w) => `<tr data-w="${esc(w.examId)}|${esc(w.key)}"${w.status === 'বাতিল' ? ' style="opacity:.5"' : ''}>
+      <td class="c"><span class="medal">${bn(w.rank)}</span></td>
+      <td><b class="en">${esc(w.name)}</b><span class="sm en">${esc(w.school)} · এসএসসি ${esc(w.batch)} · ${bn(w.score)} নম্বর</span></td>
+      <td class="en" style="white-space:nowrap"><a href="tel:${esc(w.mobile)}">📞 ${esc(w.mobile)}</a></td>
+      <td class="c">৳${bn(w.amount)}</td>
+      <td><select data-f="payVia" style="min-width:90px">${['', 'বিকাশ', 'নগদ', 'রকেট', 'ব্যাংক', 'হাতে'].map((v) => `<option${w.payVia === v ? ' selected' : ''} value="${v}">${v || '—'}</option>`).join('')}</select></td>
+      <td><input type="text" data-f="payNumber" class="en" value="${esc(w.payNumber)}" placeholder="${esc(w.mobile)}" style="min-width:120px"></td>
+      <td><select data-f="status" style="min-width:120px">${['বাকি', 'যোগাযোগ হয়েছে', 'পাঠানো', 'বাতিল'].map((v) => `<option${w.status === v ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+      <td><input type="text" data-f="txn" class="en" value="${esc(w.txn)}" placeholder="TrxID"><input type="text" data-f="note" value="${esc(w.note)}" placeholder="নোট" style="margin-top:4px"></td>
+      <td><button class="btn s p" data-wsave>সেভ</button></td></tr>`).join('')}</tbody></table></div></div>`; }).join('')}`;
+  document.querySelectorAll('[data-wsave]').forEach((b) => b.onclick = () => run(b, async () => {
+    const tr = b.closest('tr'), [ex, key] = tr.dataset.w.split('|'), f = {};
+    tr.querySelectorAll('[data-f]').forEach((i) => f[i.dataset.f] = i.value);
+    W = await call('apiWinnerSave', ex, key, f); drawWinners(); toast('সেভ হয়েছে');
+  }));
+  $('cpDue').onclick = () => { navigator.clipboard.writeText(due.map((w) => w.mobile).join('\n')); toast(bn(due.length) + 'টা নম্বর কপি হয়েছে'); };
+}
+
+/* ══════════════ পরীক্ষার্থী (গ্রাহক তালিকা) ══════════════ */
+let PP = null, pq = '', pMin = 1, pBatch = '', pShown = 200;
+async function pagePeople() {
+  $('page').innerHTML = '<div class="card muted">সব পরীক্ষা মিলিয়ে তালিকা তৈরি হচ্ছে…</div>';
+  try { PP = await call('apiPeople'); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
+  drawPeople();
+}
+function peopleRows() {
+  return PP.people.filter((p) => p.ex.length >= pMin && (!pBatch || p.b === pBatch) && (!pq || (p.n + ' ' + p.s + ' ' + p.m).toLowerCase().includes(pq)))
+    .sort((a, b) => b.ex.length - a.ex.length || b.best - a.best);
+}
+function drawPeople() {
+  const all = PP.people, nEx = PP.exams.length;
+  const rows = peopleRows();
+  $('page').innerHTML = `<div class="ph"><h2>পরীক্ষার্থী</h2><span class="sp"></span><button class="btn" id="cpNums">📋 নম্বর কপি</button><button class="btn" id="dlCsv">⬇ Excel (CSV)</button></div>
+  <div class="stats">
+    <div class="st"><b>${bnN(all.length)}</b><span>আলাদা পরীক্ষার্থী (মোবাইল ধরে)</span></div>
+    <div class="st a"><b>${bnN(all.filter((p) => p.ex.length > 1).length)}</b><span>একাধিক পরীক্ষায়</span></div>
+    <div class="st"><b>${bn(nEx)}</b><span>যত পরীক্ষার উত্তর তোলা</span></div>
+  </div>
+  <div class="card"><div class="row">
+    <input type="search" id="pq" placeholder="নাম, স্কুল, মোবাইল" value="${esc(pq)}" style="max-width:280px">
+    <label class="chk">কমপক্ষে <select id="pMin" style="width:auto">${Array.from({ length: Math.max(1, nEx) }, (_, i) => `<option value="${i + 1}"${pMin === i + 1 ? ' selected' : ''}>${bn(i + 1)}</option>`).join('')}</select> টা পরীক্ষায়</label>
+    <label class="chk">ব্যাচ <select id="pBatch" style="width:auto"><option value="">সব</option><option${pBatch === '২৭' ? ' selected' : ''}>২৭</option><option${pBatch === '২৮' ? ' selected' : ''}>২৮</option></select></label>
+    <span class="muted">তালিকায় ${bnN(rows.length)} জন</span></div>
+    <p class="muted" style="margin-top:6px;font-size:12.5px">মেগা পুরস্কারের শর্ত (প্রথম ১২টায় অংশগ্রহণ) দেখতে "কমপক্ষে ১২টা" বাছুন।</p></div>
+  <div class="tw"><table><thead><tr><th>নাম</th><th>স্কুল</th><th class="c">ব্যাচ</th><th>মোবাইল</th><th>যে পরীক্ষাগুলোয়</th><th class="c">সর্বোচ্চ</th><th class="c">বিজয়ী</th><th>শেষ দেখা</th></tr></thead><tbody>
+  ${rows.slice(0, pShown).map((p) => `<tr><td class="en">${esc(p.n)}</td><td class="en">${esc(p.s)}</td><td class="c">${esc(p.b)}</td><td class="en"><a href="tel:${esc(p.m)}">${esc(p.m)}</a></td>
+    <td>${p.ex.map((n) => '<span class="fl o">' + bn(n) + '</span>').join('')}</td><td class="c">${bn(p.best)}</td><td class="c">${p.wins ? '🏆 ' + bn(p.wins) : ''}</td><td>${stamp(p.last)}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${rows.length > pShown ? `<div class="more"><button class="btn" id="pMore">আরও দেখুন (বাকি ${bn(rows.length - pShown)})</button></div>` : ''}`;
+  $('pq').oninput = (e) => { pq = e.target.value.trim().toLowerCase(); pShown = 200; drawPeople(); $('pq').focus(); $('pq').setSelectionRange(pq.length, pq.length); };
+  $('pMin').onchange = (e) => { pMin = Number(e.target.value); drawPeople(); };
+  $('pBatch').onchange = (e) => { pBatch = e.target.value; drawPeople(); };
+  if ($('pMore')) $('pMore').onclick = () => { pShown += 500; drawPeople(); };
+  $('cpNums').onclick = () => { navigator.clipboard.writeText(rows.map((p) => p.m).join('\n')); toast(bn(rows.length) + 'টা নম্বর কপি হয়েছে'); };
+  $('dlCsv').onclick = () => {
+    const cell = (v) => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+    const lines = [['নাম', 'স্কুল', 'ব্যাচ', 'মোবাইল', 'পরীক্ষা', 'পরীক্ষার সংখ্যা', 'সর্বোচ্চ', 'বিজয়ী'].map(cell).join(',')]
+      .concat(rows.map((p) => [p.n, p.s, p.b, '\t' + p.m, p.ex.join(' '), p.ex.length, p.best, p.wins].map(cell).join(',')));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' }));
+    a.download = 'পরীক্ষার্থী-তালিকা.csv'; a.click();
+  };
+}
+
+/* ══════════════ সেটিংস ══════════════ */
+async function pageSettings() {
+  const s = S.boot.settings, me = S.boot.me;
+  const F = [['series', 'সিরিজের নাম'], ['batchLine', 'ব্যাচের লেখা'], ['topN', 'নগদ পুরস্কার কতজন', 'n'], ['cash', 'নগদ টাকা (প্রত্যেকে)', 'n'], ['windowMin', 'পুরস্কারের সময়সীমা (মিনিট)', 'n'], ['maxScore', 'পূর্ণমান', 'n'], ['defaultTime', 'প্রশ্ন প্রকাশের সাধারণ সময় (যেমন 20:30)'],
+    ['prizeHead', 'সেরা ১০-এর শিরোনামের লেখা', 'w'], ['prizeTop', 'বিজয়ীদের "প্রাপ্ত পুরস্কার" ঘর', 'w'], ['prizeAll', 'বাকি সবার "প্রাপ্ত পুরস্কার" ঘর', 'w'], ['lateTitle', 'দেরির অংশের শিরোনাম', 'w'], ['lateNote', 'দেরির অংশের ব্যাখ্যা', 'w'],
+    ['adTitle', 'নিচের বিজ্ঞাপনের বড় লেখা', 'w'], ['adLine', 'নিচের বিজ্ঞাপনের ছোট লেখা', 'w'], ['web', 'ওয়েবসাইট'], ['phone', 'ফোন'], ['note', 'বিঃদ্রঃ', 'w']];
+  $('page').innerHTML = `<div class="ph"><h2>সেটিংস</h2></div>
+  <div class="card"><h3>ফলাফলের পাতা ও নিয়ম</h3><div class="grid">
+    ${F.map(([k, t, ty]) => `<div class="fld${ty === 'w' ? ' w2' : ''}"><label>${t}</label><input type="${ty === 'n' ? 'number' : 'text'}" data-s="${k}" value="${esc(s[k])}"></div>`).join('')}
+    <div class="fld w2"><label>অফিসের পরীক্ষামূলক মোবাইল নম্বর (এগুলোর জমা সবসময় বাদ)</label><input type="text" data-s="testMobiles" class="en" value="${esc((s.testMobiles || []).join(', '))}" placeholder="01XXXXXXXXX, 01XXXXXXXXX"></div>
+    <div class="fld"><label>&nbsp;</label><label class="chk"><input type="checkbox" data-s="showTotal" ${s.showTotal ? 'checked' : ''}> ফলাফলের পাতায় "মোট অংশগ্রহণ" দেখাও</label></div>
+  </div><div style="margin-top:12px"><button class="btn p" id="sSave">সেভ করুন</button></div></div>
+  <div class="card"><h3>নিরাপত্তা — লগইন করা ডিভাইস</h3><div id="secBox" class="muted">লোড হচ্ছে…</div></div>
+  ${me.owner ? '<div class="card"><h3>ব্যবহারকারী</h3><div id="usrBox" class="muted">লোড হচ্ছে…</div></div>' : ''}
+  <div class="card"><h3>লগ — কে কখন কী করেছে</h3><div id="logBox"><button class="btn s" id="logBtn">দেখুন</button></div></div>`;
+  $('sSave').onclick = () => run($('sSave'), async () => {
+    const p = {}; document.querySelectorAll('[data-s]').forEach((i) => p[i.dataset.s] = i.type === 'checkbox' ? i.checked : i.value);
+    S.boot.settings = await call('apiSaveSettings', p); toast('সেভ হয়েছে'); pageSettings();
+  });
+  $('logBtn').onclick = () => run($('logBtn'), async () => {
+    const L = await call('apiLog');
+    $('logBox').innerHTML = `<div class="tw"><table><tbody>${L.map((l) => `<tr><td style="white-space:nowrap">${stamp(l.t)}</td><td class="en">${esc(l.e)}</td><td><b>${esc(l.a)}</b></td><td>${esc(l.d)}</td></tr>`).join('')}</tbody></table></div>`;
+  });
+  drawSec(await call('apiSecurity').catch(() => null));
+  if (me.owner) drawUsers(await call('apiUsers').catch(() => null));
+}
+function drawSec(d) {
+  if (!d) return;
+  $('secBox').innerHTML = d.sessions.map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="en"><b>${esc(x.device)}</b> · ${esc(x.email)}</span><span class="muted">শেষ ব্যবহার ${ago(x.last)}</span>${x.current ? '<span class="tag t-pub">এই ডিভাইস</span>' : `<button class="btn s d" data-rv="${esc(x.id)}">বের করে দিন</button>`}</div>`).join('') +
+    '<div style="margin-top:10px"><button class="btn s" id="rvAll">এই ডিভাইস ছাড়া সব জায়গা থেকে বের করে দিন</button></div>';
+  document.querySelectorAll('[data-rv]').forEach((b) => b.onclick = () => run(b, async () => drawSec(await call('apiRevokeSession', b.dataset.rv))));
+  $('rvAll').onclick = () => run($('rvAll'), async () => drawSec(await call('apiRevokeOthers')));
+}
+function drawUsers(d) {
+  if (!d) return;
+  $('usrBox').innerHTML = `<p class="muted" style="margin-bottom:8px">মূল ব্যবহারকারী: <span class="en">${esc([d.owner].concat(d.aliases).join(', '))}</span>। এখানে যোগ করা ইমেইল ছাড়া কেউ লগইন কোড পাবে না।</p>
+    ${d.users.map((u) => `<div class="row" style="padding:5px 0"><span class="en"><b>${esc(u.name)}</b> · ${esc(u.email)}</span>${u.off ? '<span class="tag t-bad">বন্ধ</span>' : ''}<button class="btn s d" data-du="${esc(u.email)}">সরান</button></div>`).join('') || '<p class="muted">আর কেউ নেই।</p>'}
+    <div class="row" style="margin-top:8px"><input type="text" id="uName" placeholder="নাম" style="max-width:180px"><input type="email" id="uEmail" placeholder="ইমেইল" style="max-width:240px"><button class="btn" id="uAdd">যোগ করুন</button></div>`;
+  document.querySelectorAll('[data-du]').forEach((b) => b.onclick = () => run(b, async () => drawUsers(await call('apiDeleteUser', b.dataset.du))));
+  $('uAdd').onclick = () => run($('uAdd'), async () => drawUsers(await call('apiSaveUser', { name: $('uName').value, email: $('uEmail').value })));
+}
+
+start();
+</script>
+</body>
+</html>
