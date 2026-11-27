@@ -102,6 +102,12 @@ textarea{min-height:60px;resize:vertical}
 .st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--sh)}
 .st b{display:block;font-size:22px;font-weight:800;line-height:1.2}
 .st span{font-size:12px;color:var(--mut);font-weight:600}
+.st[data-go]{cursor:pointer;transition:transform .12s,border-color .12s}
+.st[data-go]:hover{transform:translateY(-2px);border-color:var(--br3)}
+.st[data-go]::after{content:"তালিকা দেখুন ›";display:block;font-size:11px;color:var(--mut);margin-top:3px}
+.why{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:1px 8px;margin:3px 3px 0 0;background:var(--badb);color:var(--bad);cursor:pointer;border:1px solid transparent}
+.why:hover,.why.on{border-color:var(--bad)}
+.dupof{display:block;font-size:11.5px;color:var(--mut);margin-top:3px}
 .st.a b{color:var(--ok)}.st.l b{color:var(--warn)}.st.x b{color:var(--bad)}
 
 /* ট্যাব ও টেবিল */
@@ -363,7 +369,9 @@ function newExam() {
 }
 
 /* ══════════════ একটা পরীক্ষা ══════════════ */
-let E = null, tabK = 'win', exQ = '', shown = 100;
+let E = null, tabK = 'win', exQ = '', shown = 100, whyF = '';
+const WHY = { manual: 'হাতে বাদ', test: 'অফিসের নম্বর', early: 'প্রকাশের আগে', after: 'শেষ সময়ের পরে', dup: 'একাধিকবার জমা', junk: 'আজেবাজে নাম' };
+const WHY_HELP = { manual: 'আপনি বা অন্য কেউ হাতে বাদ দিয়েছেন।', test: 'সেটিংসে "অফিসের পরীক্ষামূলক নম্বর" তালিকায় আছে।', early: 'প্রশ্ন প্রকাশের সময়ের আগে জমা — সাধারণত অফিসের পরীক্ষামূলক জমা।', after: '"জমার শেষ সময়"-এর পরে জমা।', dup: 'একই মোবাইল নম্বর থেকে আগে একবার জমা হয়েছে — প্রথমটা গোনা হয়েছে (পাশে দেখানো)।', junk: 'নাম বা স্কুলের সব শব্দ অর্থহীন (কীবোর্ডে এলোমেলো চাপ)।' };
 async function pageExam(id) {
   $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
   try { E = await call('apiExam', id); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
@@ -384,12 +392,12 @@ function drawExam() {
 
   ${st.raw ? `<div class="msg i" style="font-size:12.5px">সিস্টেম যেভাবে ধরছে — প্রথম জমা: <b>${stamp(st.first)}</b> · শেষ জমা: <b>${stamp(st.last)}</b> · প্রশ্ন প্রকাশ: <b>${st.pub ? stamp(st.pub) : '—'}</b> · পুরস্কারের শেষ: <b>${st.winEnd ? stamp(st.winEnd) : '—'}</b> · জমার শেষ: <b>${st.lateEnd ? stamp(st.lateEnd) : '—'}</b></div>` : ''}
   <div class="stats">
-    <div class="st"><b>${bnN(st.raw)}</b><span>মোট জমা</span></div>
-    <div class="st a"><b>${bnN(st.ontime)}</b><span>সময়মতো (${bn(x.windowMin || s.windowMin)} মিনিটে)</span></div>
-    <div class="st l"><b>${bnN(st.late)}</b><span>নির্ধারিত সময়ের পরে</span></div>
-    <div class="st x"><b>${bnN(st.excluded)}</b><span>বাদ পড়া</span>${st.excluded ? '<span style="display:block;font-size:11px;font-weight:500">' + Object.entries(st.whyCount || {}).map(([k, n]) => ({ manual: 'হাতে বাদ', test: 'অফিসের নম্বর', early: 'প্রকাশের আগে', after: 'শেষ সময়ের পরে', dup: 'একাধিকবার', junk: 'আজেবাজে নাম' })[k] + ' ' + bn(n)).join(' · ') + '</span>' : ''}</div>
-    <div class="st"><b>${bn(st.top)}/${bn(st.max)}</b><span>সর্বোচ্চ প্রাপ্ত নম্বর</span></div>
-    <div class="st"><b>${bn(st.winners)}</b><span>নগদ পুরস্কার</span></div>
+    <div class="st" data-go="all"><b>${bnN(st.raw)}</b><span>মোট জমা</span></div>
+    <div class="st a" data-go="on"><b>${bnN(st.ontime)}</b><span>সময়মতো (${bn(x.windowMin || s.windowMin)} মিনিটে)</span></div>
+    <div class="st l" data-go="late"><b>${bnN(st.late)}</b><span>নির্ধারিত সময়ের পরে</span></div>
+    <div class="st x" data-go="x"><b>${bnN(st.excluded)}</b><span>বাদ পড়া</span>${st.excluded ? '<span style="display:block">' + Object.entries(st.whyCount || {}).map(([k, n]) => '<span class="why" data-why="' + k + '">' + WHY[k] + ' ' + bn(n) + '</span>').join('') + '</span>' : ''}</div>
+    <div class="st" data-go="on"><b>${bn(st.top)}/${bn(st.max)}</b><span>সর্বোচ্চ প্রাপ্ত নম্বর</span></div>
+    <div class="st" data-go="win"><b>${bn(st.winners)}</b><span>নগদ পুরস্কার</span></div>
   </div>
 
   ${st.raw && !st.counted ? `<div class="msg b"><b>সব জমা বাদ পড়েছে!</b> সাধারণত "প্রশ্ন প্রকাশের সময়" বা "জমার শেষ সময়" ভুল হলে এমন হয় — নিচে সময় দেখে সেভ করুন।</div>` : ''}
@@ -432,7 +440,7 @@ function drawExam() {
       ${x.status !== 'published' ? '<span class="sp" style="flex:1"></span><button class="btn s d" id="fDel">পরীক্ষাটা মুছুন</button>' : ''}</div>
   </div>
 
-  <div class="card"><h3><span class="n">৩</span>ফলাফল</h3>
+  <div class="card" id="resCard"><h3><span class="n">৩</span>ফলাফল — প্রত্যেকের বিস্তারিত</h3>
     <div class="tabs" id="tabs"></div>
     <div class="row" style="margin-bottom:10px"><input type="search" id="fq" placeholder="নাম, স্কুল বা মোবাইল দিয়ে খুঁজুন" value="${esc(exQ)}" style="max-width:360px"></div>
     <div id="tbl"></div>
@@ -455,6 +463,11 @@ function drawExam() {
   $('fCheck').onclick = () => run($('fCheck'), async () => checkSource());
   $('fFile').onchange = (ev) => importFile(ev.target.files[0]);
   $('fq').oninput = (ev) => { exQ = ev.target.value.trim().toLowerCase(); shown = 100; drawTable(); $('fq').focus(); };
+  document.querySelectorAll('.st[data-go]').forEach((c) => c.onclick = (ev) => {
+    const w = ev.target.closest('.why');
+    tabK = c.dataset.go; whyF = w ? w.dataset.why : ''; shown = 100; exQ = ''; $('fq').value = '';
+    drawTable(); $('resCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   bindRowActions($('page'));
   document.querySelectorAll('[data-cp]').forEach((b) => b.onclick = () => { navigator.clipboard.writeText(b.dataset.cp); toast('কপি হয়েছে'); });
   if ($('fShortSave')) $('fShortSave').onclick = () => run($('fShortSave'), async () => { E = await call('apiExamSave', Object.assign(collect(), { pdfShort: $('fShort').value.trim() })); drawExam(); toast('সেভ হয়েছে'); });
@@ -515,6 +528,8 @@ async function importFile(f) {
 }
 
 function rowsFor(k) {
+  if (k === 'all') return E.ontime.concat(E.late, E.excluded).slice().sort((a, b) => a.t - b.t);
+  if (k === 'x' && whyF) return E.excluded.filter((e) => e.why === whyF);
   if (k === 'win') return E.ontime.filter((e) => e.w);
   if (k === 'on') return E.ontime;
   if (k === 'late') return E.late;
@@ -523,14 +538,19 @@ function rowsFor(k) {
   return [];
 }
 function drawTable() {
-  const T = [['win', 'বিজয়ী'], ['on', 'সময়মতো'], ['late', 'সময়ের পরে'], ['f', 'দেখার মতো'], ['x', 'বাদ পড়া']];
-  $('tabs').innerHTML = T.map(([k, t]) => `<button class="tab${tabK === k ? ' on' : ''}" data-t="${k}">${t}<em>${bn(rowsFor(k).length)}</em></button>`).join('');
-  document.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => { tabK = b.dataset.t; shown = 100; drawTable(); });
+  const T = [['win', 'বিজয়ী'], ['on', 'সময়মতো'], ['late', 'সময়ের পরে'], ['f', 'দেখার মতো'], ['x', 'বাদ পড়া'], ['all', 'সব জমা (সময়ের ক্রমে)']];
+  $('tabs').innerHTML = T.map(([k, t]) => `<button class="tab${tabK === k ? ' on' : ''}" data-t="${k}">${t}<em>${bn(k === 'x' ? E.excluded.length : rowsFor(k).length)}</em></button>`).join('') +
+    (tabK === 'x' && E.excluded.length ? '<div style="width:100%;margin-top:4px">' + ['', ...Object.keys(E.stats.whyCount || {})].map((k) => `<span class="why${whyF === k ? ' on' : ''}" data-wf="${k}">${k ? WHY[k] + ' ' + bn(E.stats.whyCount[k]) : 'সব কারণ'}</span>`).join('') + (whyF ? '<p class="muted" style="font-size:12.5px;margin-top:4px">' + WHY_HELP[whyF] + '</p>' : '') + '</div>' : '');
+  document.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => { tabK = b.dataset.t; whyF = ''; shown = 100; drawTable(); });
+  document.querySelectorAll('[data-wf]').forEach((b) => b.onclick = () => { whyF = b.dataset.wf; shown = 100; drawTable(); });
   let rows = rowsFor(tabK);
   if (exQ) rows = rows.filter((e) => (e.n + ' ' + e.s + ' ' + e.m + ' ' + e.rn + ' ' + e.rs).toLowerCase().includes(exQ));
   const x = E.exam;
   if (!rows.length) { $('tbl').innerHTML = '<div class="msg i">' + (E.stats.raw ? 'এখানে কেউ নেই।' : 'এখনো উত্তর তোলা হয়নি — উপরে "শিট থেকে উত্তর আনুন" চাপুন।') + '</div>'; return; }
-  const isX = tabK === 'x';
+  const isX = tabK === 'x', isAll = tabK === 'all';
+  const byKey = {}; E.ontime.concat(E.late, E.excluded).forEach((e) => byKey[e.k] = e);
+  const status = (e) => e.why ? '<span class="fl x">বাদ: ' + esc(WHY[e.why]) + '</span>' : e.w ? '<span class="fl o">বিজয়ী ' + bn(e.w) + '</span>' : E.late.includes(e) ? '<span class="fl">সময়ের পরে</span>' : '<span class="fl o">সময়মতো</span>';
+  const dupInfo = (e) => { const p = e.dup && byKey[e.dup]; return p ? '<span class="dupof">প্রথম জমা: ' + stamp(p.t, x.date) + ' · <span class="en">' + esc(p.rn) + '</span> · ' + bn(p.sc) + '/' + bn(p.mx) + (p.why ? ' (এটাও বাদ: ' + esc(WHY[p.why]) + ')' : p.r ? ' (মেধাক্রম ' + bn(p.r) + ')' : '') + '</span>' : ''; };
   const body = rows.slice(0, shown).map((e) => `<tr class="${e.w ? 'w1' : ''}">
     <td class="c">${e.w ? '<span class="medal">' + bn(e.w) + '</span>' : (e.r ? '<span class="rk">' + bn(e.r) + '</span>' : '—')}</td>
     <td><span class="en">${esc(e.n)}</span>${e.ed ? ' <span class="fl o">সংশোধিত</span>' : ''}${e.n !== e.rn && !e.ed ? '<span class="sm en">লেখা ছিল: ' + esc(e.rn) + '</span>' : ''}</td>
@@ -539,12 +559,12 @@ function drawTable() {
     <td class="c"><b>${bn(e.sc)}</b>/${bn(e.mx)}</td>
     <td class="c" style="white-space:nowrap">${stamp(e.t, x.date)}</td>
     <td class="en" style="white-space:nowrap"><a href="tel:${esc(e.m)}">${esc(e.m)}</a></td>
-    <td>${isX ? '<span class="fl x">' + esc(e.wt) + '</span>' : e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('') + (e.fo === 'ok' ? '<span class="fl o">যোগ্য ধরা হয়েছে</span>' : e.fo === 'no' ? '<span class="fl x">পুরস্কার থেকে বাদ</span>' : e.fo === 'inc' ? '<span class="fl o">হাতে রাখা</span>' : '')}</td>
-    <td><div class="acts">${isX
+    <td>${isAll ? status(e) + (e.why === 'dup' ? dupInfo(e) : '') + e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('') : isX ? '<span class="fl x">' + esc(e.wt) + '</span>' + dupInfo(e) : e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('') + (e.fo === 'ok' ? '<span class="fl o">যোগ্য ধরা হয়েছে</span>' : e.fo === 'no' ? '<span class="fl x">পুরস্কার থেকে বাদ</span>' : e.fo === 'inc' ? '<span class="fl o">হাতে রাখা</span>' : '')}</td>
+    <td><div class="acts">${isAll ? '' : isX
       ? (['manual', 'junk', 'dup'].includes(e.why) ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='${e.why === 'manual' ? '{"x":0}' : '{"inc":1}'}'>ফিরিয়ে আনুন</button>` : '<span class="muted" style="font-size:12px">সময় বদলালে ঠিক হবে</span>')
       : `<button class="btn s" data-ed="${esc(e.k)}">✎</button>${e.el ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"no":1}' title="নগদ পুরস্কারের জন্য বিবেচিত নয়">পুরস্কার নয়</button>` : `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":1}'>যোগ্য ধরুন</button>`}${e.fo ? `<button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":0,"no":0,"inc":0}'>আগের মতো</button>` : ''}<button class="btn s d" data-ov="${esc(e.k)}" data-o='{"x":1}'>বাদ</button>`}</div></td>
   </tr>`).join('');
-  $('tbl').innerHTML = `<div class="tw"><table><thead><tr><th class="c">মেধাক্রম</th><th>নাম</th><th>স্কুল</th><th class="c">শ্রেণি</th><th class="c">নম্বর</th><th class="c">জমার সময়</th><th>মোবাইল</th><th>${isX ? 'কেন বাদ' : 'লক্ষ করুন'}</th><th></th></tr></thead><tbody>${body}</tbody></table></div>
+  $('tbl').innerHTML = `<div class="tw"><table><thead><tr><th class="c">মেধাক্রম</th><th>নাম</th><th>স্কুল</th><th class="c">শ্রেণি</th><th class="c">নম্বর</th><th class="c">জমার সময়</th><th>মোবাইল</th><th>${isAll ? 'অবস্থা' : isX ? 'কেন বাদ' : 'লক্ষ করুন'}</th><th></th></tr></thead><tbody>${body}</tbody></table></div>
     ${rows.length > shown ? `<div class="more"><button class="btn" id="moreBtn">আরও দেখুন (বাকি ${bn(rows.length - shown)})</button></div>` : ''}`;
   if ($('moreBtn')) $('moreBtn').onclick = () => { shown += 300; drawTable(); };
   bindRowActions($('tbl'));
