@@ -386,11 +386,17 @@ function drawExam() {
     <div class="st"><b>${bnN(st.raw)}</b><span>মোট জমা</span></div>
     <div class="st a"><b>${bnN(st.ontime)}</b><span>সময়মতো (${bn(x.windowMin || s.windowMin)} মিনিটে)</span></div>
     <div class="st l"><b>${bnN(st.late)}</b><span>নির্ধারিত সময়ের পরে</span></div>
-    <div class="st x"><b>${bnN(st.excluded)}</b><span>বাদ পড়া</span></div>
+    <div class="st x"><b>${bnN(st.excluded)}</b><span>বাদ পড়া</span>${st.excluded ? '<span style="display:block;font-size:11px;font-weight:500">' + Object.entries(st.whyCount || {}).map(([k, n]) => ({ manual: 'হাতে বাদ', test: 'অফিসের নম্বর', early: 'প্রকাশের আগে', after: 'শেষ সময়ের পরে', dup: 'একাধিকবার', junk: 'আজেবাজে নাম' })[k] + ' ' + bn(n)).join(' · ') + '</span>' : ''}</div>
     <div class="st"><b>${bn(st.top)}/${bn(st.max)}</b><span>সর্বোচ্চ প্রাপ্ত নম্বর</span></div>
     <div class="st"><b>${bn(st.winners)}</b><span>নগদ পুরস্কার</span></div>
   </div>
 
+  ${st.raw && !st.counted ? `<div class="msg b"><b>সব জমা বাদ পড়েছে!</b> সাধারণত "প্রশ্ন প্রকাশের সময়" বা "জমার শেষ সময়" ভুল হলে এমন হয় — নিচে সময় দেখে সেভ করুন।</div>` : ''}
+  ${x.pdfUrl ? `<div class="card"><h3>☁ ড্রাইভের PDF — সবার জন্য লিংক</h3>
+    <div class="row"><a class="en" href="${esc(x.pdfUrl)}" target="_blank" rel="noopener" style="word-break:break-all">${esc(x.pdfUrl)}</a>
+      <button class="btn s" data-cp="${esc(x.pdfUrl)}">কপি</button>${x.pdfShort ? `<button class="btn s" data-cp="${esc(x.pdfShort)}">ছোট লিংক কপি</button>` : ''}</div>
+    <p class="muted" style="font-size:12.5px;margin-top:4px">${bn(x.pdfPages || 0)} পাতা · বানানো ${ago(x.pdfAt)}${x.pdfVersion !== x.version ? ' · <b style="color:var(--warn)">এরপর ফলাফল বদলেছে — ফলাফলের পাতা থেকে "ড্রাইভে PDF" আবার চাপুন (লিংক একই থাকবে)</b>' : ''}</p>
+    <div class="row" style="margin-top:8px"><div class="fld" style="flex:1;max-width:420px"><label>নিজের ছোট লিংক (ঐচ্ছিক)</label><input type="text" id="fShort" class="en" value="${esc(x.pdfShort || '')}" placeholder="https://tee.com.bd/result01"></div><button class="btn s" id="fShortSave" style="align-self:flex-end">সেভ</button></div></div>` : ''}
   ${skipped.length ? `<div class="msg w"><b>দেখে নিন:</b> ${bn(skipped.length)} জনের নম্বর বিজয়ীদের সমান বা বেশি, কিন্তু নাম/স্কুল অসম্পূর্ণ বা মোবাইল ভুল বলে নগদ পুরস্কারে ধরা হয়নি। "যোগ্য ধরুন" চাপলে তাঁরা বিজয়ী হবেন।<div style="margin-top:6px">${skipped.map((e) => `<div class="row" style="margin:3px 0"><b class="en">${esc(e.n)}</b> · <span class="en">${esc(e.s)}</span> · ${bn(e.sc)}/${bn(e.mx)} · ${stamp(e.t, x.date)} · ${e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('')} <button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":1}'>যোগ্য ধরুন</button> <button class="btn s" data-ed="${esc(e.k)}">✎ নাম ঠিক করুন</button></div>`).join('')}</div></div>` : ''}
 
   <div class="card"><h3><span class="n">১</span>উত্তর কোথা থেকে</h3>
@@ -449,13 +455,15 @@ function drawExam() {
   $('fFile').onchange = (ev) => importFile(ev.target.files[0]);
   $('fq').oninput = (ev) => { exQ = ev.target.value.trim().toLowerCase(); shown = 100; drawTable(); $('fq').focus(); };
   bindRowActions($('page'));
+  document.querySelectorAll('[data-cp]').forEach((b) => b.onclick = () => { navigator.clipboard.writeText(b.dataset.cp); toast('কপি হয়েছে'); });
+  if ($('fShortSave')) $('fShortSave').onclick = () => run($('fShortSave'), async () => { E = await call('apiExamSave', Object.assign(collect(), { pdfShort: $('fShort').value.trim() })); drawExam(); toast('সেভ হয়েছে'); });
   drawTable();
 }
 function collect() {
   const x = E.exam;
   return { id: x.id, no: $('fNo').value, subject: $('fSub').value, chapters: $('fCh').value, date: $('fDate').value, publishAt: $('fPub').value, windowMin: $('fWin').value,
     lateUntil: $('fLate').value, resultDate: $('fRes').value, maxScore: $('fMax').value, batch: $('fBatch').value, nextExam: $('fNext').value, mega: $('fMega').checked,
-    sourceUrl: $('fSrc').value.trim(), sourceTab: x.sourceTab || '', map: x.map || null };
+    sourceUrl: $('fSrc').value.trim(), sourceTab: x.sourceTab || '', map: x.map || null, pdfShort: x.pdfShort || '' };
 }
 async function refreshBoot() { try { S.boot = await call('apiBoot'); } catch (e) {} }
 

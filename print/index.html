@@ -6,6 +6,9 @@
 <title>ফলাফল — ফ্রি MCQ পরীক্ষা</title>
 <link rel="icon" href="../assets/icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--m1:#3B050E;--m2:#6A0A18;--m3:#A8142A;--ink:#2A1418;--mut:#7A6A6C;--line:#D9C9B8;--zb:#FBF7F1}
@@ -17,13 +20,23 @@ body{background:#8a8a8a;font-family:"Noto Sans Bengali","Roboto",sans-serif;colo
 #bar label{display:flex;gap:6px;align-items:center;cursor:pointer}
 #bar .sp{flex:1}
 #bar .hint{font-size:12px;color:#E2C9A8}
+#bar button.alt{background:#fff;color:#3B050E}
+#bar button:disabled{opacity:.5;cursor:not-allowed}
+#prog{width:100%;font-size:13px;color:#FFE9A8;display:none}
+#prog.on{display:block}
+#prog a{color:#fff;font-weight:700}
+.pbar{width:1123px;margin:0 auto 6px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:13px;font-weight:600}
+.pbar button{font:inherit;font-size:12px;border:0;border-radius:7px;padding:3px 10px;cursor:pointer;background:#fff;color:#3B050E;font-weight:700}
+body.snap .ht .t span,body.snap .slim .t span{background:none;-webkit-text-fill-color:#FFD21F;color:#FFD21F}
+body.snap .page{box-shadow:none}
+.wc .sc{max-height:2.45em}
 #msg{max-width:700px;margin:40px auto;background:#fff;border-radius:12px;padding:20px;font-size:15px}
 #pages{padding:24px 0}
 .page{width:1123px;height:794px;background:#fff;margin:0 auto 24px;padding:22px 28px 0;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}
 .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 @media print{
   body{background:#fff}
-  #bar,#msg{display:none!important}
+  #bar,#msg,.pbar{display:none!important}
   #pages{padding:0}
   .page{margin:0;box-shadow:none;break-after:page;page-break-after:always}
   .page:last-child{break-after:auto;page-break-after:auto}
@@ -119,7 +132,8 @@ td .pt.hi{background:#FCE9A8;color:#5A3B00}
   <label><input type="checkbox" id="oPhone"> ফোন নম্বরসহ (শুধু ভেতরের কাজে)</label>
   <label><input type="checkbox" id="oTotal"> মোট অংশগ্রহণ দেখাও</label>
   <span class="sp"></span><span class="hint">প্রিন্টের জানালায় "Save as PDF" বাছুন · কাগজ A4 আড়াআড়ি · Margins: None · Background graphics ✔</span>
-  <button id="pBtn">🖨 প্রিন্ট / PDF</button></div>
+  <button id="pBtn">🖨 প্রিন্ট / PDF</button><button id="zBtn" class="alt">⬇ সব পাতার ছবি (ZIP)</button><button id="dBtn">☁ ড্রাইভে PDF ও লিংক</button>
+  <div id="prog"></div></div>
 <div id="msg">লোড হচ্ছে…</div>
 <div id="pages"></div>
 <script>
@@ -157,8 +171,76 @@ async function load() {
   await document.fonts.ready;
   draw();
 }
-$('oPhone').onchange = draw; $('oTotal').onchange = draw;
+$('oPhone').onchange = () => { draw(); lock(false); $('dBtn').title = $('oPhone').checked ? 'ফোন নম্বরসহ সংস্করণ ড্রাইভে সবার জন্য রাখা যায় না' : ''; }; $('oTotal').onchange = draw;
 $('pBtn').onclick = () => window.print();
+$('zBtn').onclick = () => allImages();
+$('dBtn').onclick = () => toDrive();
+const prog = (h) => { $('prog').innerHTML = h; $('prog').classList.toggle('on', !!h); };
+const fname = (n) => 'Result-Exam-' + String(D.exam.no).padStart(2, '0') + (n ? '-Page-' + String(n).padStart(2, '0') : '') + ($('oPhone').checked ? '-WITH-PHONE' : '');
+async function snap(page, scale) {
+  document.body.classList.add('snap');
+  try { return await html2canvas(page, { scale: scale, backgroundColor: '#ffffff', useCORS: true, logging: false }); }
+  finally { document.body.classList.remove('snap'); }
+}
+function save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+const toBlob = (c, type, q) => new Promise((r) => c.toBlob(r, type, q));
+async function oneImage(i) {
+  const pages = [...document.querySelectorAll('.page')];
+  prog('পাতা ' + bn(i + 1) + '-এর ছবি তৈরি হচ্ছে…');
+  try { save(await toBlob(await snap(pages[i], 2), 'image/png'), fname(i + 1) + '.png'); prog(''); }
+  catch (e) { prog('ছবি তৈরি হয়নি: ' + esc(e.message)); }
+}
+async function allImages() {
+  const pages = [...document.querySelectorAll('.page')];
+  if (!pages.length) return;
+  lock(true);
+  try {
+    const zip = new JSZip();
+    for (let i = 0; i < pages.length; i++) {
+      prog('ছবি তৈরি হচ্ছে: পাতা ' + bn(i + 1) + ' / ' + bn(pages.length));
+      zip.file(fname(i + 1) + '.png', await toBlob(await snap(pages[i], 2), 'image/png'));
+    }
+    prog('ZIP বানানো হচ্ছে…');
+    save(await zip.generateAsync({ type: 'blob' }), fname(0) + '-Images.zip');
+    prog('✔ ' + bn(pages.length) + 'টা পাতার ছবি ZIP হিসেবে নামানো হয়েছে।');
+  } catch (e) { prog('ছবি তৈরি হয়নি: ' + esc(e.message)); }
+  finally { lock(false); }
+}
+function lock(on) { ['pBtn', 'zBtn', 'dBtn', 'oPhone', 'oTotal'].forEach((k) => $(k).disabled = on || (k === 'dBtn' && $('oPhone').checked)); }
+const b64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+async function api(fn, ...args) {
+  const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn, args, auth: localStorage.getItem('mq_auth') || '' }) });
+  const j = await r.json(); if (!j.ok) throw new Error(j.error); return j.data;
+}
+async function toDrive() {
+  if ($('oPhone').checked) return;
+  const pages = [...document.querySelectorAll('.page')];
+  if (!pages.length) return;
+  if (D.exam.status !== 'published' && !confirm('ফলাফল এখনো প্রকাশ হয়নি। তবুও ড্রাইভে সবার জন্য লিংক বানাবেন?')) return;
+  lock(true);
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
+    for (let i = 0; i < pages.length; i++) {
+      prog('PDF তৈরি হচ্ছে: পাতা ' + bn(i + 1) + ' / ' + bn(pages.length));
+      const c = await snap(pages[i], 1.6);
+      if (i) doc.addPage('a4', 'landscape');
+      doc.addImage(c.toDataURL('image/jpeg', 0.86), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
+    }
+    const u8 = new Uint8Array(doc.output('arraybuffer'));
+    const CH = 4 * 1024 * 1024, n = Math.ceil(u8.length / CH);
+    const up = Array.from(crypto.getRandomValues(new Uint8Array(12)), (x) => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
+    let res = null;
+    for (let i = 0; i < n; i++) {
+      prog('ড্রাইভে পাঠানো হচ্ছে: ' + bn(i + 1) + ' / ' + bn(n) + ' (' + bn((u8.length / 1048576).toFixed(1)) + ' MB)');
+      res = await api('apiPdfChunk', D.exam.id, up, i, u8.length, b64(u8.subarray(i * CH, (i + 1) * CH)), pages.length);
+    }
+    D.exam.pdfUrl = res.url;
+    prog('✔ ড্রাইভে রাখা হয়েছে — সবার জন্য লিংক: <a href="' + esc(res.url) + '" target="_blank" rel="noopener">' + esc(res.url) + '</a> <button id="cpL" class="alt" style="padding:2px 10px">কপি</button>');
+    $('cpL').onclick = () => { navigator.clipboard.writeText(res.url); $('cpL').textContent = '✔ কপি হয়েছে'; };
+  } catch (e) { prog('ড্রাইভে পাঠানো যায়নি: ' + esc(e.message)); }
+  finally { lock(false); }
+}
 
 function draw() {
   const x = D.exam, s = D.settings, st = D.stats, phone = $('oPhone').checked, showTotal = $('oTotal').checked;
@@ -231,7 +313,14 @@ function draw() {
   }
   put(`<div class="note"><b>বিঃদ্রঃ</b> ${esc(s.note)}</div>`);
   const pages = [...P.querySelectorAll('.page')];
-  pages.forEach((p, i) => { p.querySelector('.ad .pg').textContent = 'পাতা ' + bn(i + 1) + ' / ' + bn(pages.length); });
+  pages.forEach((p, i) => {
+    p.querySelector('.ad .pg').textContent = 'পাতা ' + bn(i + 1) + ' / ' + bn(pages.length);
+    const b = document.createElement('div'); b.className = 'pbar';
+    b.innerHTML = '<span>পাতা ' + bn(i + 1) + '</span><button>⬇ এই পাতার ছবি</button>';
+    b.querySelector('button').onclick = () => oneImage(i);
+    P.insertBefore(b, p);
+  });
+  if (x.pdfUrl && !phone) prog('ড্রাইভের লিংক (আগে বানানো): <a href="' + esc(x.pdfUrl) + '" target="_blank" rel="noopener">' + esc(x.pdfUrl) + '</a> — ফলাফল বদলালে "ড্রাইভে PDF" আবার চাপুন, লিংক একই থাকবে।');
 }
 load();
 </script>
