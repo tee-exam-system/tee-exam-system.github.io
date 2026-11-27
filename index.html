@@ -142,6 +142,11 @@ html[data-theme=dark] .rk{color:var(--gold)}
 #md .ft{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .busy{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#F2C44A,transparent);background-size:50% 100%;animation:bz 1s linear infinite;z-index:100}
 @keyframes bz{from{background-position:-50% 0}to{background-position:150% 0}}
+.fmts{display:grid;gap:6px;margin:8px 0}
+.fmt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.fmt:has(input:checked){border-color:var(--br3);background:var(--soft)}
+.fmt b{display:block;font-size:13.5px}.fmt small{color:var(--mut);font-size:12px}
+.prev{font-family:Roboto,monospace;font-size:12px;min-height:110px;white-space:pre}
 .map{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px 12px;margin-top:10px}
 
 /* ফোন */
@@ -252,6 +257,51 @@ async function run(btn, fn) {
 function modal(html) { $('mdBox').innerHTML = html; $('md').classList.remove('hide'); }
 function closeModal() { $('md').classList.add('hide'); }
 $('md').addEventListener('click', (e) => { if (e.target.id === 'md') closeModal(); });
+
+/* ── নম্বর কপি: নানা ধরনে (MiMSMS, WhatsApp, Excel) ── */
+const CP_FMTS = [
+  ['line', 'প্রতি লাইনে একটা নম্বর', '01712345678 — সাধারণ কাজে, অনেক SMS সাইটে'],
+  ['comma', 'কমা দিয়ে, এক লাইনে', '01712345678, 01812345678'],
+  ['mim', 'MiMSMS / বাল্ক SMS (88 সহ, কমা দিয়ে)', '8801712345678,8801812345678 — MiMSMS-এর নম্বরের ঘরে সরাসরি বসানো যায়'],
+  ['plus', 'আন্তর্জাতিক (+880), প্রতি লাইনে', '+8801712345678 — WhatsApp / ফোনের কন্টাক্টে'],
+  ['name', 'নামসহ, প্রতি লাইনে', 'Mohona Sarkar — 01712345678'],
+  ['excel', 'Excel-এর জন্য (নাম, স্কুল, নম্বর)', 'Excel/Google Sheet-এ বসালে আলাদা কলামে পড়ে']
+];
+function cpText(list, fmt) {
+  const n = (m) => m, i = (m) => '88' + m;
+  if (fmt === 'comma') return list.map((p) => p.m).join(', ');
+  if (fmt === 'mim') return list.map((p) => i(p.m)).join(',');
+  if (fmt === 'plus') return list.map((p) => '+' + i(p.m)).join('\n');
+  if (fmt === 'name') return list.map((p) => (p.n || '') + ' — ' + p.m).join('\n');
+  if (fmt === 'excel') return ['নাম\tস্কুল\tমোবাইল'].concat(list.map((p) => [p.n || '', p.s || '', "'" + p.m].join('\t'))).join('\n');
+  return list.map((p) => n(p.m)).join('\n');
+}
+function numbersDialog(items, title) {
+  const seen = {}, list = [];
+  (items || []).forEach((p) => { const m = String(p.m || '').replace(/\D/g, ''); if (/^01[3-9]\d{8}$/.test(m) && !seen[m]) { seen[m] = 1; list.push({ m, n: p.n, s: p.s }); } });
+  const bad = (items || []).length - list.length;
+  let fmt = localStorage.getItem('mq_cpfmt') || 'line', per = Number(localStorage.getItem('mq_cpper') || 0), part = 0;
+  const draw = () => {
+    const parts = per ? Math.ceil(list.length / per) : 1; if (part >= parts) part = 0;
+    const slice = per ? list.slice(part * per, part * per + per) : list;
+    const txt = cpText(slice, fmt);
+    modal(`<h3>📋 নম্বর — ${esc(title)}</h3>
+      <p class="muted" style="font-size:12.5px">${bnN(list.length)}টা আলাদা নম্বর${bad ? ' · ' + bnN(bad) + 'টা বাদ (একই নম্বর দুবার বা ভুল নম্বর)' : ''}</p>
+      <div class="fmts">${CP_FMTS.map(([k, t, d]) => `<label class="fmt"><input type="radio" name="cpf" value="${k}"${fmt === k ? ' checked' : ''}><span><b>${t}</b><small>${esc(d)}</small></span></label>`).join('')}</div>
+      <div class="row" style="margin-bottom:8px"><label class="chk">একবারে <select id="cpPer" style="width:auto">${[0, 100, 200, 500, 1000].map((v) => `<option value="${v}"${per === v ? ' selected' : ''}>${v ? bn(v) + 'টা করে' : 'সব'}</option>`).join('')}</select></label>
+        ${parts > 1 ? `<label class="chk">ভাগ <select id="cpPart" style="width:auto">${Array.from({ length: parts }, (_, i) => `<option value="${i}"${part === i ? ' selected' : ''}>${bn(i + 1)} (${bn(i * per + 1)}–${bn(Math.min(list.length, (i + 1) * per))})</option>`).join('')}</select></label>` : ''}</div>
+      <textarea class="prev" readonly id="cpPrev">${esc(txt)}</textarea>
+      <div class="ft"><button class="btn" onclick="closeModal()">বন্ধ</button><button class="btn" id="cpFile">⬇ ফাইল</button>${navigator.share ? '<button class="btn" id="cpShare">↗ শেয়ার</button>' : ''}<button class="btn p" id="cpGo">📋 কপি (${bnN(slice.length)}টা)</button></div>`);
+    document.querySelectorAll('[name=cpf]').forEach((r) => r.onchange = () => { fmt = r.value; localStorage.setItem('mq_cpfmt', fmt); draw(); });
+    $('cpPer').onchange = (e) => { per = Number(e.target.value); localStorage.setItem('mq_cpper', per); part = 0; draw(); };
+    if ($('cpPart')) $('cpPart').onchange = (e) => { part = Number(e.target.value); draw(); };
+    $('cpGo').onclick = async () => { try { await navigator.clipboard.writeText(txt); } catch (e) { $('cpPrev').select(); document.execCommand('copy'); } toast(bnN(slice.length) + 'টা নম্বর কপি হয়েছে'); };
+    if ($('cpShare')) $('cpShare').onclick = () => navigator.share({ text: txt }).catch(() => {});
+    $('cpFile').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + txt], { type: 'text/plain' })); a.download = 'নম্বর-' + title.replace(/[^\w\u0980-\u09FF]+/g, '-') + (parts > 1 ? '-ভাগ-' + (part + 1) : '') + (fmt === 'excel' ? '.tsv' : '.txt'); a.click(); };
+  };
+  if (!list.length) return toast('কোনো ঠিক নম্বর নেই', true);
+  draw();
+}
 
 /* ── সময় (ঢাকা) ── */
 const MON = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
@@ -406,6 +456,8 @@ function drawExam() {
       <button class="btn s" data-cp="${esc(x.pdfUrl)}">কপি</button>${x.pdfShort ? `<button class="btn s" data-cp="${esc(x.pdfShort)}">ছোট লিংক কপি</button>` : ''}</div>
     <p class="muted" style="font-size:12.5px;margin-top:4px">${bn(x.pdfPages || 0)} পাতা · বানানো ${ago(x.pdfAt)}${x.pdfVersion !== x.version ? ' · <b style="color:var(--warn)">এরপর ফলাফল বদলেছে — ফলাফলের পাতা থেকে "ড্রাইভে PDF" আবার চাপুন (লিংক একই থাকবে)</b>' : ''}</p>
     <div class="row" style="margin-top:8px"><div class="fld" style="flex:1;max-width:420px"><label>নিজের ছোট লিংক (ঐচ্ছিক)</label><input type="text" id="fShort" class="en" value="${esc(x.pdfShort || '')}" placeholder="https://tee.com.bd/result01"></div><button class="btn s" id="fShortSave" style="align-self:flex-end">সেভ</button></div></div>` : ''}
+  ${st.winners ? `<div class="card"><h3>📣 ফেসবুক পোস্টের লেখা</h3><textarea id="fbTxt" rows="10" style="font-size:13px">${esc(fbText())}</textarea>
+    <div class="row" style="margin-top:8px"><button class="btn p" id="fbCp">📋 কপি</button>${navigator.share ? '<button class="btn" id="fbSh">↗ শেয়ার</button>' : ''}<span class="muted" style="font-size:12.5px">${x.pdfUrl ? '' : 'ড্রাইভে PDF বানালে লিংক নিজে বসবে।'} এখানে বদলালে শুধু এই কপিতে থাকবে।</span></div></div>` : ''}
   ${skipped.length ? `<div class="msg w"><b>দেখে নিন:</b> ${bn(skipped.length)} জনের নম্বর বিজয়ীদের সমান বা বেশি, কিন্তু নাম/স্কুল অসম্পূর্ণ বা মোবাইল ভুল বলে নগদ পুরস্কারে ধরা হয়নি। "যোগ্য ধরুন" চাপলে তাঁরা বিজয়ী হবেন।<div style="margin-top:6px">${skipped.map((e) => `<div class="row" style="margin:3px 0"><b class="en">${esc(e.n)}</b> · <span class="en">${esc(e.s)}</span> · ${bn(e.sc)}/${bn(e.mx)} · ${stamp(e.t, x.date)} · ${e.f.map((f) => '<span class="fl">' + esc(f) + '</span>').join('')} <button class="btn s" data-ov="${esc(e.k)}" data-o='{"ok":1}'>যোগ্য ধরুন</button> <button class="btn s" data-ed="${esc(e.k)}">✎ নাম ঠিক করুন</button></div>`).join('')}</div></div>` : ''}
 
   <div class="card"><h3><span class="n">১</span>উত্তর কোথা থেকে</h3>
@@ -442,7 +494,7 @@ function drawExam() {
 
   <div class="card" id="resCard"><h3><span class="n">৩</span>ফলাফল — প্রত্যেকের বিস্তারিত</h3>
     <div class="tabs" id="tabs"></div>
-    <div class="row" style="margin-bottom:10px"><input type="search" id="fq" placeholder="নাম, স্কুল বা মোবাইল দিয়ে খুঁজুন" value="${esc(exQ)}" style="max-width:360px"></div>
+    <div class="row" style="margin-bottom:10px"><input type="search" id="fq" placeholder="নাম, স্কুল বা মোবাইল দিয়ে খুঁজুন" value="${esc(exQ)}" style="max-width:360px"><span style="flex:1"></span><button class="btn s" id="tNums">📋 এই তালিকার নম্বর</button><button class="btn s" id="tCsv">⬇ পুরো ফলাফল Excel (ফোনসহ)</button></div>
     <div id="tbl"></div>
   </div>`;
 
@@ -462,6 +514,8 @@ function drawExam() {
   });
   $('fCheck').onclick = () => run($('fCheck'), async () => checkSource());
   $('fFile').onchange = (ev) => importFile(ev.target.files[0]);
+  $('tNums').onclick = () => { let r = rowsFor(tabK); if (exQ) r = r.filter((e) => (e.n + ' ' + e.s + ' ' + e.m + ' ' + e.rn + ' ' + e.rs).toLowerCase().includes(exQ)); numbersDialog(r.map((e) => ({ m: e.m, n: e.n, s: e.s })), 'পরীক্ষা ' + pad2(x.no) + ' · ' + ({ win: 'বিজয়ী', on: 'সময়মতো', late: 'সময়ের পরে', f: 'দেখার মতো', x: 'বাদ পড়া', all: 'সব জমা' })[tabK]); };
+  $('tCsv').onclick = () => examCsv();
   $('fq').oninput = (ev) => { exQ = ev.target.value.trim().toLowerCase(); shown = 100; drawTable(); $('fq').focus(); };
   document.querySelectorAll('.st[data-go]').forEach((c) => c.onclick = (ev) => {
     const w = ev.target.closest('.why');
@@ -469,9 +523,21 @@ function drawExam() {
     drawTable(); $('resCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   bindRowActions($('page'));
+  if ($('fbCp')) $('fbCp').onclick = () => { navigator.clipboard.writeText($('fbTxt').value); toast('পোস্টের লেখা কপি হয়েছে'); };
+  if ($('fbSh')) $('fbSh').onclick = () => navigator.share({ text: $('fbTxt').value }).catch(() => {});
   document.querySelectorAll('[data-cp]').forEach((b) => b.onclick = () => { navigator.clipboard.writeText(b.dataset.cp); toast('কপি হয়েছে'); });
   if ($('fShortSave')) $('fShortSave').onclick = () => run($('fShortSave'), async () => { E = await call('apiExamSave', Object.assign(collect(), { pdfShort: $('fShort').value.trim() })); drawExam(); toast('সেভ হয়েছে'); });
   drawTable();
+}
+function fbText() {
+  const x = E.exam, s = E.settings, st = E.stats, wins = E.ontime.filter((e) => e.w);
+  const show = x.showTotal != null ? x.showTotal : s.showTotal;
+  return ['📢 ' + s.series + ' — পরীক্ষা ' + pad2(x.no) + ' (' + x.subject + ')-এর ফলাফল প্রকাশিত!', (x.batch || s.batchLine) + ' · ' + dateBn(x.date),
+    show ? 'মোট অংশগ্রহণ: ' + bnN(st.ontime + st.late) + ' জন' : '', '',
+    '🏆 মেধাতালিকার সেরা ' + bn(wins.length) + ' জন — ' + s.prizeHead]
+    .concat(wins.map((e) => bn(e.w) + '. ' + e.n + ' — ' + e.s + ' (' + bn(e.sc) + '/' + bn(e.mx) + ')'))
+    .concat(['', '📄 পুরো ফলাফল (PDF): ' + (x.pdfShort || x.pdfUrl || '[ড্রাইভের লিংক]'), x.nextExam ? '📅 পরের পরীক্ষা: ' + x.nextExam : '', '', s.fbTail])
+    .filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 function collect() {
   const x = E.exam;
@@ -569,6 +635,16 @@ function drawTable() {
   if ($('moreBtn')) $('moreBtn').onclick = () => { shown += 300; drawTable(); };
   bindRowActions($('tbl'));
 }
+function examCsv() {
+  const x = E.exam;
+  const cell = (v) => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const st = (e) => e.why ? 'বাদ: ' + WHY[e.why] : e.w ? 'বিজয়ী ' + e.w : E.late.includes(e) ? 'সময়ের পরে' : 'সময়মতো';
+  const rows = E.ontime.concat(E.late, E.excluded);
+  const lines = [['মেধাক্রম', 'নাম', 'স্কুল', 'শ্রেণি', 'প্রাপ্ত নম্বর', 'পূর্ণমান', 'জমার সময়', 'মোবাইল', 'অবস্থা', 'লক্ষ করুন', 'যেমন লিখেছিল (নাম)', 'যেমন লিখেছিল (স্কুল)', 'শিটের সারি'].map(cell).join(',')]
+    .concat(rows.map((e) => [e.r || '', e.n, e.s, e.b ? 'এসএসসি ' + e.b : '', e.sc, e.mx, stamp(e.t), '\t' + e.m, st(e), e.f.join('; '), e.rn, e.rs, e.row].map(cell).join(',')));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv' }));
+  a.download = 'ফলাফল-পরীক্ষা-' + String(x.no).padStart(2, '0') + '-' + x.subject + '-ফোনসহ.csv'; a.click();
+}
 function findRow(k) { return E.ontime.concat(E.late, E.excluded).find((e) => e.k === k); }
 function bindRowActions(root) {
   root.querySelectorAll('[data-ov]').forEach((b) => b.onclick = () => run(b, async () => {
@@ -586,6 +662,12 @@ function bindRowActions(root) {
 }
 
 /* ══════════════ বিজয়ী ও টাকা ══════════════ */
+const ORD = ['', '১ম', '২য়', '৩য়', '৪র্থ', '৫ম', '৬ষ্ঠ', '৭ম', '৮ম', '৯ম', '১০ম'];
+function winMsg(w) {
+  const ex = w.exam || {};
+  return String(S.boot.settings.waWin || '').replace(/\{নাম\}/g, w.name).replace(/\{পরীক্ষা\}/g, pad2(ex.no || 0)).replace(/\{বিষয়\}/g, ex.subject || '')
+    .replace(/\{স্থান\}/g, ORD[w.rank] || bn(w.rank) + 'তম').replace(/\{টাকা\}/g, bnN(w.amount));
+}
 let W = [];
 async function pageWinners() {
   $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
@@ -598,7 +680,7 @@ function drawWinners() {
   const paid = live.filter((w) => w.status === 'পাঠানো'), due = live.filter((w) => w.status !== 'পাঠানো');
   const groups = {};
   W.forEach((w) => { const k = w.examId; (groups[k] = groups[k] || []).push(w); });
-  $('page').innerHTML = `<div class="ph"><h2>বিজয়ী ও টাকা</h2><span class="sp"></span><button class="btn" id="cpDue">📋 বাকিদের নম্বর কপি</button></div>
+  $('page').innerHTML = `<div class="ph"><h2>বিজয়ী ও টাকা</h2><span class="sp"></span><button class="btn" id="cpDue">📋 বাকিদের নম্বর</button></div>
   <div class="stats">
     <div class="st"><b>${bn(live.length)}</b><span>মোট বিজয়ী</span></div>
     <div class="st a"><b>৳${bnN(sum(paid))}</b><span>পাঠানো হয়েছে (${bn(paid.length)} জন)</span></div>
@@ -610,19 +692,20 @@ function drawWinners() {
     ${g.map((w) => `<tr data-w="${esc(w.examId)}|${esc(w.key)}"${w.status === 'বাতিল' ? ' style="opacity:.5"' : ''}>
       <td class="c"><span class="medal">${bn(w.rank)}</span></td>
       <td><b class="en">${esc(w.name)}</b><span class="sm en">${esc(w.school)} · এসএসসি ${esc(w.batch)} · ${bn(w.score)} নম্বর</span></td>
-      <td class="en" style="white-space:nowrap"><a href="tel:${esc(w.mobile)}">📞 ${esc(w.mobile)}</a></td>
+      <td class="en" style="white-space:nowrap"><a href="tel:${esc(w.mobile)}">📞 ${esc(w.mobile)}</a><br><a class="btn s" style="margin-top:4px" target="_blank" rel="noopener" href="https://wa.me/88${esc(w.mobile)}?text=${encodeURIComponent(winMsg(w))}">💬 WhatsApp</a> <button class="btn s" data-msg="${esc(w.examId)}|${esc(w.key)}">লেখা কপি</button></td>
       <td class="c">৳${bn(w.amount)}</td>
       <td><select data-f="payVia" style="min-width:90px">${['', 'বিকাশ', 'নগদ', 'রকেট', 'ব্যাংক', 'হাতে'].map((v) => `<option${w.payVia === v ? ' selected' : ''} value="${v}">${v || '—'}</option>`).join('')}</select></td>
       <td><input type="text" data-f="payNumber" class="en" value="${esc(w.payNumber)}" placeholder="${esc(w.mobile)}" style="min-width:120px"></td>
       <td><select data-f="status" style="min-width:120px">${['বাকি', 'যোগাযোগ হয়েছে', 'পাঠানো', 'বাতিল'].map((v) => `<option${w.status === v ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
       <td><input type="text" data-f="txn" class="en" value="${esc(w.txn)}" placeholder="TrxID"><input type="text" data-f="note" value="${esc(w.note)}" placeholder="নোট" style="margin-top:4px"></td>
       <td><button class="btn s p" data-wsave>সেভ</button></td></tr>`).join('')}</tbody></table></div></div>`; }).join('')}`;
+  document.querySelectorAll('[data-msg]').forEach((b) => b.onclick = () => { const [ex, key] = b.dataset.msg.split('|'); const w = W.find((x) => x.examId === ex && x.key === key); navigator.clipboard.writeText(winMsg(w)); toast('লেখা কপি হয়েছে — SMS-এ বসান'); });
   document.querySelectorAll('[data-wsave]').forEach((b) => b.onclick = () => run(b, async () => {
     const tr = b.closest('tr'), [ex, key] = tr.dataset.w.split('|'), f = {};
     tr.querySelectorAll('[data-f]').forEach((i) => f[i.dataset.f] = i.value);
     W = await call('apiWinnerSave', ex, key, f); drawWinners(); toast('সেভ হয়েছে');
   }));
-  $('cpDue').onclick = () => { navigator.clipboard.writeText(due.map((w) => w.mobile).join('\n')); toast(bn(due.length) + 'টা নম্বর কপি হয়েছে'); };
+  $('cpDue').onclick = () => numbersDialog(due.map((w) => ({ m: w.mobile, n: w.name, s: w.school })), 'বিজয়ী — টাকা বাকি');
 }
 
 /* ══════════════ পরীক্ষার্থী (গ্রাহক তালিকা) ══════════════ */
@@ -639,7 +722,7 @@ function peopleRows() {
 function drawPeople() {
   const all = PP.people, nEx = PP.exams.length;
   const rows = peopleRows();
-  $('page').innerHTML = `<div class="ph"><h2>পরীক্ষার্থী</h2><span class="sp"></span><button class="btn" id="cpNums">📋 নম্বর কপি</button><button class="btn" id="dlCsv">⬇ Excel (CSV)</button></div>
+  $('page').innerHTML = `<div class="ph"><h2>পরীক্ষার্থী</h2><span class="sp"></span><button class="btn" id="cpNums">📋 নম্বর</button><button class="btn" id="dlCsv">⬇ Excel (CSV)</button></div>
   <div class="stats">
     <div class="st"><b>${bnN(all.length)}</b><span>আলাদা পরীক্ষার্থী (মোবাইল ধরে)</span></div>
     <div class="st a"><b>${bnN(all.filter((p) => p.ex.length > 1).length)}</b><span>একাধিক পরীক্ষায়</span></div>
@@ -660,7 +743,7 @@ function drawPeople() {
   $('pMin').onchange = (e) => { pMin = Number(e.target.value); drawPeople(); };
   $('pBatch').onchange = (e) => { pBatch = e.target.value; drawPeople(); };
   if ($('pMore')) $('pMore').onclick = () => { pShown += 500; drawPeople(); };
-  $('cpNums').onclick = () => { navigator.clipboard.writeText(rows.map((p) => p.m).join('\n')); toast(bn(rows.length) + 'টা নম্বর কপি হয়েছে'); };
+  $('cpNums').onclick = () => numbersDialog(rows.map((p) => ({ m: p.m, n: p.n, s: p.s })), 'পরীক্ষার্থী' + (pMin > 1 ? ' (কমপক্ষে ' + bn(pMin) + 'টা পরীক্ষায়)' : '') + (pBatch ? ' · এসএসসি ' + pBatch : ''));
   $('dlCsv').onclick = () => {
     const cell = (v) => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
     const lines = [['নাম', 'স্কুল', 'ব্যাচ', 'মোবাইল', 'পরীক্ষা', 'পরীক্ষার সংখ্যা', 'সর্বোচ্চ', 'বিজয়ী'].map(cell).join(',')]
@@ -679,9 +762,13 @@ async function pageSettings() {
   $('page').innerHTML = `<div class="ph"><h2>সেটিংস</h2></div>
   <div class="card"><h3>ফলাফলের পাতা ও নিয়ম</h3><div class="grid">
     ${F.map(([k, t, ty]) => `<div class="fld${ty === 'w' ? ' w2' : ''}"><label>${t}</label><input type="${ty === 'n' ? 'number' : 'text'}" data-s="${k}" value="${esc(s[k])}"></div>`).join('')}
+    <div class="fld w2"><label>বিজয়ীকে WhatsApp/SMS-এর লেখা — {নাম} {পরীক্ষা} {বিষয়} {স্থান} {টাকা} নিজে বসে</label><textarea data-s="waWin" rows="4">${esc(s.waWin)}</textarea></div>
+    <div class="fld w2"><label>ফেসবুক পোস্টের শেষের লেখা</label><textarea data-s="fbTail" rows="3">${esc(s.fbTail)}</textarea></div>
     <div class="fld w2"><label>অফিসের পরীক্ষামূলক মোবাইল নম্বর (এগুলোর জমা সবসময় বাদ)</label><input type="text" data-s="testMobiles" class="en" value="${esc((s.testMobiles || []).join(', '))}" placeholder="01XXXXXXXXX, 01XXXXXXXXX"></div>
     <div class="fld"><label>&nbsp;</label><label class="chk"><input type="checkbox" data-s="showTotal" ${s.showTotal ? 'checked' : ''}> ফলাফলের পাতায় "মোট অংশগ্রহণ" দেখাও</label></div>
   </div><div style="margin-top:12px"><button class="btn p" id="sSave">সেভ করুন</button></div></div>
+  <div class="card"><h3>ব্যাকআপ</h3><p class="muted" style="font-size:13px">প্রতিবার ফলাফল প্রকাশের সময় পুরো ডেটার Excel কপি নিজে নিজে ড্রাইভের "ফ্রি MCQ পরীক্ষার ফলাফল/ব্যাকআপ" ফোল্ডারে যায় (শেষ ২০টা থাকে)। শেষ ব্যাকআপ: <b id="bkAt">${S.boot.backupAt ? ago(S.boot.backupAt) : 'এখনো হয়নি'}</b></p>
+    <div class="row" style="margin-top:8px"><button class="btn" id="bkBtn">এখনই ব্যাকআপ নিন</button><span id="bkLink"></span></div></div>
   <div class="card"><h3>নিরাপত্তা — লগইন করা ডিভাইস</h3><div id="secBox" class="muted">লোড হচ্ছে…</div></div>
   ${me.owner ? '<div class="card"><h3>ব্যবহারকারী</h3><div id="usrBox" class="muted">লোড হচ্ছে…</div></div>' : ''}
   <div class="card"><h3>লগ — কে কখন কী করেছে</h3><div id="logBox"><button class="btn s" id="logBtn">দেখুন</button></div></div>`;
@@ -689,6 +776,7 @@ async function pageSettings() {
     const p = {}; document.querySelectorAll('[data-s]').forEach((i) => p[i.dataset.s] = i.type === 'checkbox' ? i.checked : i.value);
     S.boot.settings = await call('apiSaveSettings', p); toast('সেভ হয়েছে'); pageSettings();
   });
+  $('bkBtn').onclick = () => run($('bkBtn'), async () => { const r = await call('apiBackupNow'); S.boot.backupAt = r.at; $('bkAt').textContent = 'এইমাত্র'; $('bkLink').innerHTML = '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">ফোল্ডার খুলুন</a>'; toast('ব্যাকআপ নেওয়া হয়েছে'); });
   $('logBtn').onclick = () => run($('logBtn'), async () => {
     const L = await call('apiLog');
     $('logBox').innerHTML = `<div class="tw"><table><tbody>${L.map((l) => `<tr><td style="white-space:nowrap">${stamp(l.t)}</td><td class="en">${esc(l.e)}</td><td><b>${esc(l.a)}</b></td><td>${esc(l.d)}</td></tr>`).join('')}</tbody></table></div>`;
