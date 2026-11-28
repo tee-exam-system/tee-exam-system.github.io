@@ -262,7 +262,7 @@ $('md').addEventListener('click', (e) => { if (e.target.id === 'md') closeModal(
 const CP_FMTS = [
   ['line', 'প্রতি লাইনে একটা নম্বর', '01712345678 — সাধারণ কাজে, অনেক SMS সাইটে'],
   ['comma', 'কমা দিয়ে, এক লাইনে', '01712345678, 01812345678'],
-  ['mim', 'MiMSMS / বাল্ক SMS (88 সহ, কমা দিয়ে)', '8801712345678,8801812345678 — MiMSMS-এর নম্বরের ঘরে সরাসরি বসানো যায়'],
+  ['mim', 'MiMSMS / বাল্ক SMS (কমা দিয়ে, ফাঁকা ছাড়া)', '01712345678,01812345678 — MiMSMS-এর নম্বরের ঘরে সরাসরি বসানো যায়'],
   ['plus', 'আন্তর্জাতিক (+880), প্রতি লাইনে', '+8801712345678 — WhatsApp / ফোনের কন্টাক্টে'],
   ['name', 'নামসহ, প্রতি লাইনে', 'Mohona Sarkar — 01712345678'],
   ['excel', 'Excel-এর জন্য (নাম, স্কুল, নম্বর)', 'Excel/Google Sheet-এ বসালে আলাদা কলামে পড়ে']
@@ -270,7 +270,7 @@ const CP_FMTS = [
 function cpText(list, fmt) {
   const n = (m) => m, i = (m) => '88' + m;
   if (fmt === 'comma') return list.map((p) => p.m).join(', ');
-  if (fmt === 'mim') return list.map((p) => i(p.m)).join(',');
+  if (fmt === 'mim') return list.map((p) => p.m).join(',');
   if (fmt === 'plus') return list.map((p) => '+' + i(p.m)).join('\n');
   if (fmt === 'name') return list.map((p) => (p.n || '') + ' — ' + p.m).join('\n');
   if (fmt === 'excel') return ['নাম\tস্কুল\tমোবাইল'].concat(list.map((p) => [p.n || '', p.s || '', "'" + p.m].join('\t'))).join('\n');
@@ -297,7 +297,14 @@ function numbersDialog(items, title) {
     if ($('cpPart')) $('cpPart').onchange = (e) => { part = Number(e.target.value); draw(); };
     $('cpGo').onclick = async () => { try { await navigator.clipboard.writeText(txt); } catch (e) { $('cpPrev').select(); document.execCommand('copy'); } toast(bnN(slice.length) + 'টা নম্বর কপি হয়েছে'); };
     if ($('cpShare')) $('cpShare').onclick = () => navigator.share({ text: txt }).catch(() => {});
-    $('cpFile').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + txt], { type: 'text/plain' })); a.download = 'নম্বর-' + title.replace(/[^\w\u0980-\u09FF]+/g, '-') + (parts > 1 ? '-ভাগ-' + (part + 1) : '') + (fmt === 'excel' ? '.tsv' : '.txt'); a.click(); };
+    $('cpFile').onclick = () => {
+      // Excel-এর ফাইল .csv — এক্সেলে খোলে (.tsv অনেক কম্পিউটারে অন্য প্রোগ্রামে, যেমন ChatGPT-তে খোলে)
+      const cell = (v) => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+      const isX = fmt === 'excel';
+      const body = isX ? [['নাম', 'স্কুল', 'মোবাইল'].map(cell).join(',')].concat(slice.map((p) => [p.n || '', p.s || '', '\t' + p.m].map(cell).join(','))).join('\r\n') : txt;
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + body], { type: isX ? 'text/csv' : 'text/plain' }));
+      a.download = 'নম্বর-' + title.replace(/[^\wঀ-৿]+/g, '-') + (parts > 1 ? '-ভাগ-' + (part + 1) : '') + (isX ? '.csv' : '.txt'); a.click();
+    };
   };
   if (!list.length) return toast('কোনো ঠিক নম্বর নেই', true);
   draw();
