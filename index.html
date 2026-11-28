@@ -162,6 +162,10 @@ a.btn{text-decoration:none}
 .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0 12px}
 .res .btn{justify-content:center}
 .pulse{animation:pl 1.1s ease-in-out 4}
+/* বিজয়ীর সারিতে সেভ না হওয়া বদল */
+tr.dirty td{background:rgba(242,196,74,.13)}
+tr.dirty [data-wsave]{box-shadow:0 0 0 3px rgba(242,196,74,.55)}
+.unsaved{display:block;font-size:11px;font-weight:700;color:var(--warn);margin-top:4px;white-space:nowrap}
 /* বিজয়ীদের সাদাকালো PDF — বিকাশ/নগদ নম্বর সংগ্রহের কাগজ (A4 খাড়া, ৭৯৪×১১২৩) */
 #wpdf{position:absolute;left:-10000px;top:0}
 #wpdf .wp{width:794px;height:1123px;background:#fff;color:#000;padding:38px 40px 30px;position:relative;font-family:"Noto Sans Bengali","Roboto",sans-serif;display:flex;flex-direction:column}
@@ -835,6 +839,9 @@ function winMsg(w) {
 let W = [];
 const WF0 = { ex: [], subj: '', from: '', to: '', st: '' };
 let WF = Object.assign({}, WF0);
+// সেভ না হওয়া বদল: "examId|key" → { field: value } — পাতা নতুন করে আঁকলেও (অন্য সারি সেভ, ছাঁকনি) হারায় না
+let WD = {};
+window.addEventListener('beforeunload', (e) => { if (Object.keys(WD).length) { e.preventDefault(); e.returnValue = ''; } });
 const WST = [['', 'সব'], ['due', 'টাকা পাঠানো বাকি'], ['nonum', 'বিকাশ/নগদ নম্বর নেওয়া বাকি'], ['যোগাযোগ হয়েছে', 'যোগাযোগ হয়েছে'], ['পাঠানো', 'টাকা পাঠানো হয়েছে'], ['বাতিল', 'বাতিল']];
 async function pageWinners() {
   $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
@@ -845,6 +852,24 @@ function fixWinMobiles(list) {
   const f = (m) => { const d = String(m == null ? '' : m).replace(/\D/g, ''); return /^1[3-9]\d{8}$/.test(d) ? '0' + d : String(m == null ? '' : m); };
   (list || []).forEach((w) => { w.mobile = f(w.mobile); w.payNumber = f(w.payNumber); });
   return list || [];
+}
+function wSaveAllBtn() {
+  const n = Object.keys(WD).length, ph = document.querySelector('#page .ph');
+  if (!ph) return;
+  let b = $('wSaveAll');
+  if (!n) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('button'); b.className = 'btn g'; b.id = 'wSaveAll'; ph.insertBefore(b, $('cpDue')); }
+  b.textContent = '💾 সব সেভ করুন (' + bn(n) + 'টা সারি)';
+  b.onclick = () => run(b, async () => {
+    const keys = Object.keys(WD); let done = 0;
+    for (const k of keys) {
+      const [ex, key] = k.split('|'), w = W.find((x) => x.examId + '|' + x.key === k) || {}, f = {};
+      ['payVia', 'payNumber', 'status', 'txn', 'note'].forEach((c) => f[c] = c in WD[k] ? WD[k][c] : (w[c] == null ? '' : w[c]));
+      W = fixWinMobiles(await call('apiWinnerSave', ex, key, f)); delete WD[k]; done++;
+      b.textContent = '💾 সেভ হচ্ছে… ' + bn(done) + ' / ' + bn(keys.length);
+    }
+    const y = window.scrollY; drawWinners(); window.scrollTo(0, y); toast(bn(done) + 'টা সারি সেভ হয়েছে');
+  });
 }
 function wExams() { const m = {}; W.forEach((w) => { const e = w.exam || {}; if (e.no) m[e.no] = e; }); return Object.values(m).sort((a, b) => a.no - b.no); }
 function wRows() {
@@ -878,7 +903,8 @@ function drawWinners() {
   const groups = {}, order = [];
   rows.forEach((w) => { const k = w.examId; if (!groups[k]) { groups[k] = []; order.push(k); } groups[k].push(w); });
   const narrowed = !!(WF.ex.length || WF.subj || WF.from || WF.to || WF.st);
-  $('page').innerHTML = `<div class="ph"><h2>বিজয়ী ও টাকা</h2><span class="sp"></span><button class="btn" id="cpDue">📋 বাকিদের নম্বর</button><button class="btn p" id="wPdf">📄 PDF — বিকাশ নম্বর সংগ্রহের কাগজ</button></div>
+  const nD = Object.keys(WD).length;
+  $('page').innerHTML = `<div class="ph"><h2>বিজয়ী ও টাকা</h2><span class="sp"></span>${nD ? `<button class="btn g" id="wSaveAll">💾 সব সেভ করুন (${bn(nD)}টা সারি)</button>` : ''}<button class="btn" id="cpDue">📋 বাকিদের নম্বর</button><button class="btn p" id="wPdf">📄 PDF — বিকাশ নম্বর সংগ্রহের কাগজ</button></div>
   <div class="stats">
     <div class="st"><b>${bn(live.length)}</b><span>${narrowed ? 'ছাঁকনিতে বিজয়ী' : 'মোট বিজয়ী'}</span></div>
     <div class="st a"><b>৳${bnN(sum(paid))}</b><span>পাঠানো হয়েছে (${bn(paid.length)} জন)</span></div>
@@ -897,7 +923,7 @@ function drawWinners() {
   ${W.length && !rows.length ? '<div class="msg i">এই ছাঁকনিতে কেউ নেই।</div>' : ''}
   ${order.map((k) => { const g = groups[k], ex = g[0].exam || {}; return `<div class="card"><h3>পরীক্ষা ${pad2(ex.no || 0)} · ${esc(ex.subject || '')} <span class="muted" style="font-weight:500">· ${esc(dateBn(ex.date, true))}</span></h3>
     <div class="tw"><table><thead><tr><th class="c">স্থান</th><th>নাম ও স্কুল</th><th>মোবাইল</th><th class="c">টাকা</th><th>মাধ্যম</th><th>যে নম্বরে পাঠানো</th><th>অবস্থা</th><th>লেনদেন নম্বর / নোট</th><th></th></tr></thead><tbody>
-    ${g.map((w) => `<tr data-w="${esc(w.examId)}|${esc(w.key)}"${w.status === 'বাতিল' ? ' style="opacity:.5"' : ''}>
+    ${g.map((w) => `<tr data-w="${esc(w.examId)}|${esc(w.key)}"${WD[w.examId + '|' + w.key] ? ' class="dirty"' : ''}${w.status === 'বাতিল' ? ' style="opacity:.5"' : ''}>
       <td class="c"><span class="medal">${bn(w.rank)}</span></td>
       <td><b class="en">${esc(w.name)}</b><span class="sm en">${esc(w.school)} · এসএসসি ${esc(w.batch)} · ${bn(w.score)} নম্বর</span></td>
       <td class="en" style="white-space:nowrap"><a href="tel:${esc(w.mobile)}">📞 ${esc(w.mobile)}</a><br><a class="btn s" style="margin-top:4px" target="_blank" rel="noopener" href="https://wa.me/88${esc(w.mobile)}?text=${encodeURIComponent(winMsg(w))}">💬 WhatsApp</a> <button class="btn s" data-msg="${esc(w.examId)}|${esc(w.key)}">লেখা কপি</button></td>
@@ -906,7 +932,24 @@ function drawWinners() {
       <td><input type="text" data-f="payNumber" class="en" value="${esc(w.payNumber)}" placeholder="${esc(w.mobile)}" style="min-width:120px"></td>
       <td><select data-f="status" style="min-width:120px">${['বাকি', 'যোগাযোগ হয়েছে', 'পাঠানো', 'বাতিল'].map((v) => `<option${w.status === v ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
       <td><input type="text" data-f="txn" class="en" value="${esc(w.txn)}" placeholder="TrxID"><input type="text" data-f="note" value="${esc(w.note)}" placeholder="নোট" style="margin-top:4px"></td>
-      <td><button class="btn s p" data-wsave>সেভ</button></td></tr>`).join('')}</tbody></table></div></div>`; }).join('')}`;
+      <td><button class="btn s p" data-wsave>সেভ</button>${WD[w.examId + '|' + w.key] ? '<span class="unsaved">সেভ হয়নি</span>' : ''}</td></tr>`).join('')}</tbody></table></div></div>`; }).join('')}`;
+  // সেভ না হওয়া বদল আবার বসানো, আর বদলালেই মনে রাখা
+  document.querySelectorAll('tr[data-w]').forEach((tr) => {
+    const k = tr.dataset.w, d = WD[k];
+    tr.querySelectorAll('[data-f]').forEach((i) => {
+      if (d && i.dataset.f in d) i.value = d[i.dataset.f];
+      const mark = () => {
+        const w = W.find((x) => x.examId + '|' + x.key === k) || {};
+        const cur = {}; tr.querySelectorAll('[data-f]').forEach((j) => { if (String(j.value) !== String(w[j.dataset.f] == null ? '' : w[j.dataset.f])) cur[j.dataset.f] = j.value; });
+        if (Object.keys(cur).length) WD[k] = cur; else delete WD[k];
+        const dirty = !!WD[k]; tr.classList.toggle('dirty', dirty);
+        const sv = tr.querySelector('[data-wsave]').parentNode; let u = sv.querySelector('.unsaved');
+        if (dirty && !u) { u = document.createElement('span'); u.className = 'unsaved'; u.textContent = 'সেভ হয়নি'; sv.appendChild(u); } else if (!dirty && u) u.remove();
+        wSaveAllBtn();
+      };
+      i.addEventListener('input', mark); i.addEventListener('change', mark);
+    });
+  });
   const redraw = () => drawWinners();
   document.querySelectorAll('[data-wx]').forEach((b) => b.onclick = () => { const n = Number(b.dataset.wx); WF.ex = WF.ex.includes(n) ? WF.ex.filter((x) => x !== n) : WF.ex.concat(n); redraw(); });
   if ($('wSubj')) {
@@ -919,10 +962,13 @@ function drawWinners() {
   document.querySelectorAll('[data-go=nonum]').forEach((b) => b.onclick = () => { WF.st = 'nonum'; redraw(); });
   document.querySelectorAll('[data-msg]').forEach((b) => b.onclick = () => { const [ex, key] = b.dataset.msg.split('|'); const w = W.find((x) => x.examId === ex && x.key === key); navigator.clipboard.writeText(winMsg(w)); toast('লেখা কপি হয়েছে — SMS-এ বসান'); });
   document.querySelectorAll('[data-wsave]').forEach((b) => b.onclick = () => run(b, async () => {
-    const tr = b.closest('tr'), [ex, key] = tr.dataset.w.split('|'), f = {};
+    const tr = b.closest('tr'), k = tr.dataset.w, [ex, key] = k.split('|'), f = {};
     tr.querySelectorAll('[data-f]').forEach((i) => f[i.dataset.f] = i.value);
-    W = fixWinMobiles(await call('apiWinnerSave', ex, key, f)); drawWinners(); toast('সেভ হয়েছে');
+    W = fixWinMobiles(await call('apiWinnerSave', ex, key, f)); delete WD[k];
+    const y = window.scrollY; drawWinners(); window.scrollTo(0, y);   // অন্য সারির সেভ না হওয়া বদল WD থেকে ফিরে আসে
+    toast('সেভ হয়েছে' + (Object.keys(WD).length ? ' — আরও ' + bn(Object.keys(WD).length) + 'টা সারি সেভ বাকি' : ''));
   }));
+  wSaveAllBtn();
   $('cpDue').onclick = () => numbersDialog(due.map((w) => ({ m: w.mobile, n: w.name, s: w.school })), 'বিজয়ী — টাকা বাকি' + (narrowed ? ' (' + wTitle() + ')' : ''), { guard: false });
   $('wPdf').onclick = () => run($('wPdf'), () => winnersPdf(rows));
 }
