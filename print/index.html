@@ -236,7 +236,10 @@ async function toDrive() {
       res = await api('apiPdfChunk', D.exam.id, up, i, u8.length, b64(u8.subarray(i * CH, (i + 1) * CH)), pages.length);
     }
     D.exam.pdfUrl = res.url;
-    prog('✔ ড্রাইভে রাখা হয়েছে — সবার জন্য লিংক: <a href="' + esc(res.url) + '" target="_blank" rel="noopener">' + esc(res.url) + '</a> <button id="cpL" class="alt" style="padding:2px 10px">কপি</button>');
+    const ac = res.access || {};
+    prog('✔ ড্রাইভে রাখা হয়েছে — সবার জন্য লিংক: <a href="' + esc(res.url) + '" target="_blank" rel="noopener">' + esc(res.url) + '</a> <button id="cpL" class="alt" style="padding:2px 10px">কপি</button>'
+      + '<br>🔒 মালিক ' + esc(ac.owner || '') + ' · সম্পাদক ' + esc((ac.team || []).join(', ')) + ' · বাকি সবাই শুধু দেখতে পারে'
+      + ((ac.left || []).length ? '<br>⚠️ সরানো যায়নি: ' + esc(ac.left.join(', ')) : ''));
     $('cpL').onclick = () => { navigator.clipboard.writeText(res.url); $('cpL').textContent = '✔ কপি হয়েছে'; };
   } catch (e) { prog('ড্রাইভে পাঠানো যায়নি: ' + esc(e.message)); }
   finally { lock(false); }
