@@ -172,18 +172,25 @@ a.btn{text-decoration:none}
 #wpdf .who{display:flex;gap:26px;font-size:13px;font-weight:600;margin:12px 0 10px}
 #wpdf .who span{flex:1;border-bottom:1px solid #000;padding-bottom:2px}
 #wpdf .h2{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;border-bottom:1.5px solid #000;padding-bottom:6px;margin-bottom:10px}
-#wpdf table{border-collapse:collapse;width:100%;min-width:0;table-layout:fixed}
-#wpdf th{background:#fff;color:#000;font-size:13px;font-weight:800;text-align:center;border:1.5px solid #000;padding:7px 6px;position:static}
-#wpdf td{border:1px solid #000;padding:5px 8px;font-size:13px;height:52px;vertical-align:middle;color:#000}
-#wpdf tr.g td{height:30px;background:#E9E9E9;font-weight:800;font-size:13px;border-top:1.5px solid #000}
-#wpdf tr.g td small{font-weight:600}
-#wpdf td.rk{text-align:center;font-weight:800;font-size:17px}
-#wpdf td.nm b{display:block;font-family:"Roboto","Noto Sans Bengali",sans-serif;font-size:14px;font-weight:700;line-height:1.25}
-#wpdf td.nm span{display:block;font-family:"Roboto","Noto Sans Bengali",sans-serif;font-size:11.5px;line-height:1.3}
-#wpdf td.mb{text-align:center;font-family:"Roboto",sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px}
-#wpdf td.pay{vertical-align:top;padding-top:4px}
-#wpdf td.pay small{font-size:11px;font-weight:600;display:block}
-#wpdf td.pay b{display:block;font-family:"Roboto",sans-serif;font-size:16px;margin-top:6px;letter-spacing:.5px}
+#wpdf .tb{border:1.5px solid #000}
+#wpdf .tr{display:flex;border-top:1px solid #000}
+#wpdf .tr:first-child{border-top:0}
+#wpdf .c{border-left:1px solid #000;padding:4px 8px;display:flex;flex-direction:column;justify-content:center;min-width:0;color:#000}
+#wpdf .c:first-child{border-left:0}
+#wpdf .c1{width:72px;flex:none;align-items:center;font-weight:800;font-size:17px}
+#wpdf .c2{width:300px;flex:none}
+#wpdf .c3{width:150px;flex:none;align-items:center;font-family:"Roboto",sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px}
+#wpdf .c4{flex:1;justify-content:flex-start}
+#wpdf .tr.th{border-bottom:.5px solid #000}
+#wpdf .tr.th .c{height:38px;align-items:center;text-align:center;font-size:13px;font-weight:800;font-family:"Noto Sans Bengali",sans-serif;letter-spacing:0}
+#wpdf .tr.w{min-height:52px}
+#wpdf .c2{padding-top:6px;padding-bottom:6px}
+#wpdf .tr.g{display:block;background:#E9E9E9;padding:6px 10px;font-weight:800;font-size:13px;border-top:1.5px solid #000}
+#wpdf .tr.g small{font-weight:600}
+#wpdf .c2 b{display:block;font-family:"Roboto","Noto Sans Bengali",sans-serif;font-size:14px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wpdf .c2 span{display:block;font-family:"Roboto","Noto Sans Bengali",sans-serif;font-size:11.5px;line-height:1.3}
+#wpdf .c4 small{font-size:11px;font-weight:600;display:block;padding-top:1px}
+#wpdf .c4 b{display:block;font-family:"Roboto",sans-serif;font-size:16px;margin-top:5px;letter-spacing:.5px}
 #wpdf .ft{margin-top:auto;display:flex;justify-content:space-between;font-size:11px;font-weight:600;border-top:1px solid #000;padding-top:6px}
 @keyframes pl{50%{box-shadow:0 0 0 7px rgba(242,196,74,.6)}}
 
@@ -831,8 +838,13 @@ let WF = Object.assign({}, WF0);
 const WST = [['', 'সব'], ['due', 'টাকা পাঠানো বাকি'], ['nonum', 'বিকাশ/নগদ নম্বর নেওয়া বাকি'], ['যোগাযোগ হয়েছে', 'যোগাযোগ হয়েছে'], ['পাঠানো', 'টাকা পাঠানো হয়েছে'], ['বাতিল', 'বাতিল']];
 async function pageWinners() {
   $('page').innerHTML = '<div class="card muted">লোড হচ্ছে…</div>';
-  try { W = await call('apiWinners'); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
+  try { W = fixWinMobiles(await call('apiWinners')); } catch (e) { $('page').innerHTML = '<div class="msg b">' + esc(e.message) + '</div>'; return; }
   drawWinners();
+}
+function fixWinMobiles(list) {
+  const f = (m) => { const d = String(m == null ? '' : m).replace(/\D/g, ''); return /^1[3-9]\d{8}$/.test(d) ? '0' + d : String(m == null ? '' : m); };
+  (list || []).forEach((w) => { w.mobile = f(w.mobile); w.payNumber = f(w.payNumber); });
+  return list || [];
 }
 function wExams() { const m = {}; W.forEach((w) => { const e = w.exam || {}; if (e.no) m[e.no] = e; }); return Object.values(m).sort((a, b) => a.no - b.no); }
 function wRows() {
@@ -909,7 +921,7 @@ function drawWinners() {
   document.querySelectorAll('[data-wsave]').forEach((b) => b.onclick = () => run(b, async () => {
     const tr = b.closest('tr'), [ex, key] = tr.dataset.w.split('|'), f = {};
     tr.querySelectorAll('[data-f]').forEach((i) => f[i.dataset.f] = i.value);
-    W = await call('apiWinnerSave', ex, key, f); drawWinners(); toast('সেভ হয়েছে');
+    W = fixWinMobiles(await call('apiWinnerSave', ex, key, f)); drawWinners(); toast('সেভ হয়েছে');
   }));
   $('cpDue').onclick = () => numbersDialog(due.map((w) => ({ m: w.mobile, n: w.name, s: w.school })), 'বিজয়ী — টাকা বাকি' + (narrowed ? ' (' + wTitle() + ')' : ''), { guard: false });
   $('wPdf').onclick = () => run($('wPdf'), () => winnersPdf(rows));
@@ -938,32 +950,47 @@ async function winnersPdf(list) {
   // সারি: পরীক্ষার শিরোনাম + বিজয়ী; নতুন পাতায় শিরোনাম আবার ("আগের পাতার পরে")
   const items = []; let lastNo = null;
   list.forEach((w) => { const e = w.exam || {}; if (e.no !== lastNo) { items.push({ g: e }); lastNo = e.no; } items.push({ w }); });
-  const pages = []; let cur = [], cap = 14, curG = null;
-  items.forEach((it) => {
-    if (it.g) curG = it.g;
-    if (cur.length >= cap || (it.g && cur.length >= cap - 1)) { pages.push(cur); cur = []; cap = 17; if (!it.g && curG) cur.push({ g: curG, cont: true }); }
-    cur.push(it);
-  });
-  if (cur.length) pages.push(cur);
-  const sub = wTitle() || 'সব পরীক্ষা', N = pages.length;
+  const sub = wTitle() || 'সব পরীক্ষা';
   const now = Date.now(), printed = dateBn(new Date(now + 6 * 3600e3).toISOString().slice(0, 10));
   const exLine = (e) => `পরীক্ষা ${pad2(e.no || 0)} · ${esc(e.subject || '')} · ${esc(dateBn(e.date))}`;
-  const row = (w) => `<tr><td class="rk">${bn(w.rank)}</td>
-    <td class="nm"><b>${esc(w.name)}</b><span>${esc(w.school)} · <span style="display:inline;font-family:&quot;Noto Sans Bengali&quot;">এসএসসি ${esc(w.batch)}</span></span></td>
-    <td class="mb">${esc(w.mobile)}</td>
-    <td class="pay">${w.payNumber ? `<small>${esc(w.payVia || 'বিকাশ/নগদ')}</small><b>${esc(w.payNumber)}</b>` : '<small>☐ বিকাশ &nbsp; ☐ নগদ</small>'}</td></tr>`;
+  // শুরুর ০ হারানো নম্বর (1306169474) ঠিক করে দেখানো
+  const fixM = (m) => { const d = String(m || '').replace(/\D/g, ''); return /^1[3-9]\d{8}$/.test(d) ? '0' + d : /^8801\d{9}$/.test(d) ? d.slice(2) : String(m || ''); };
+  const row = (w) => `<div class="tr w"><div class="c c1">${bn(w.rank)}</div>
+    <div class="c c2"><b>${esc(w.name)}</b><span>${esc(w.school)} · <span style="display:inline;font-family:&quot;Noto Sans Bengali&quot;">এসএসসি ${esc(w.batch)}</span></span></div>
+    <div class="c c3">${esc(fixM(w.mobile))}</div>
+    <div class="c c4">${w.payNumber ? `<small>${esc(w.payVia || 'বিকাশ/নগদ')}</small><b>${esc(fixM(w.payNumber))}</b>` : '<small>☐ বিকাশ &nbsp; ☐ নগদ</small>'}</div></div>`;
   const head = `<div class="k">টেকনিক পাবলিকেশন · ${esc(S.boot.settings.series || 'ফ্রি MCQ পরীক্ষা')} · ${esc(S.boot.settings.batchLine || '')}</div>
     <h1>বিজয়ীদের তালিকা — বিকাশ/নগদ নম্বর সংগ্রহ</h1>
     <div class="sub">${esc(sub)} · মোট ${bn(list.length)} জন · ছাপা: ${esc(printed)}</div>
     <div class="note">প্রত্যেককে ফোন করে নগদ পুরস্কারের টাকা পাঠানোর বিকাশ বা নগদ নম্বর জেনে শেষ ঘরে লিখুন (কোনটা, তাতে টিক দিন)। ফোন না ধরলে ঘরে "ধরেনি" লিখে রাখুন।</div>
     <div class="who"><span>যিনি ফোন করেছেন:</span><span style="flex:.55">তারিখ:</span></div>`;
-  const box = document.createElement('div'); box.id = 'wpdf';
-  box.innerHTML = pages.map((pg, i) => `<div class="wp">${i === 0 ? head : `<div class="h2"><span>বিজয়ীদের তালিকা — বিকাশ/নগদ নম্বর সংগ্রহ</span><span>${esc(sub)}</span></div>`}
-    <table><colgroup><col style="width:72px"><col style="width:300px"><col style="width:150px"><col></colgroup>
-      <thead><tr><th>মেধাক্রম</th><th>নাম ও স্কুল</th><th>মোবাইল নং</th><th>বিকাশ/নগদ নং</th></tr></thead>
-      <tbody>${pg.map((it) => it.g ? `<tr class="g"><td colspan="4">${exLine(it.g)}${it.cont ? ' <small>(আগের পাতার পরে)</small>' : ''}</td></tr>` : row(it.w)).join('')}</tbody></table>
-    <div class="ft"><span>ফলাফল-সিস্টেম · tee-exam-system.github.io</span><span>পাতা ${bn(i + 1)} / ${bn(N)}</span></div></div>`).join('');
-  document.body.appendChild(box);
+  const thRow = '<div class="tr th"><div class="c c1">মেধাক্রম</div><div class="c c2">নাম ও স্কুল</div><div class="c c3">মোবাইল নং</div><div class="c c4">বিকাশ/নগদ নং</div></div>';
+  const gRow = (g, cont) => `<div class="tr g">${exLine(g)}${cont ? ' <small>(আগের পাতার পরে)</small>' : ''}</div>`;
+  const head2 = `<div class="h2"><span>বিজয়ীদের তালিকা — বিকাশ/নগদ নম্বর সংগ্রহ</span><span>${esc(sub)}</span></div>`;
+  const foot = (i, N) => `<div class="ft"><span>ফলাফল-সিস্টেম · tee-exam-system.github.io</span><span>পাতা ${bn(i + 1)} / ${bn(N)}</span></div>`;
+  const box = document.createElement('div'); box.id = 'wpdf'; document.body.appendChild(box);
+  // ১) মাপা: প্রতিটা সারির আসল উচ্চতা (লম্বা স্কুলের নামে দুই লাইন হয়)
+  box.innerHTML = `<div class="wp">${head}<div class="tb">${thRow}${items.map((it) => it.g ? gRow(it.g) : row(it.w)).join('')}</div>${foot(0, 1)}</div><div class="wp">${head2}<div class="tb">${thRow}</div>${foot(0, 1)}</div>`;
+  const [m1, m2] = box.querySelectorAll('.wp');
+  const H = [...m1.querySelectorAll('.tb > .tr:not(.th)')].map((e) => e.getBoundingClientRect().height);
+  const gH = (H[items.findIndex((it) => it.g)] || 32);
+  const room = (wp) => { const t = wp.querySelector('.tb').getBoundingClientRect().top - wp.getBoundingClientRect().top, th = wp.querySelector('.tr.th').getBoundingClientRect().height, f = wp.querySelector('.ft').getBoundingClientRect().height; return 1123 - t - th - f - 30 - 14; };
+  const room1 = room(m1), room2 = room(m2);
+  // ২) ভাগ: পাতায় জায়গা না থাকলে পরের পাতায়; পরীক্ষার শিরোনাম পাতার একদম শেষে একা থাকে না
+  const pages = []; let cur = [], used = 0, cap = room1, curG = null;
+  items.forEach((it, i) => {
+    const h = H[i], need = it.g ? h + (H[i + 1] || 0) : h;
+    if (it.g) curG = it.g;
+    if (cur.length && used + need > cap) {
+      pages.push(cur); cur = []; used = 0; cap = room2;
+      if (!it.g && curG) { cur.push({ g: curG, cont: true }); used += gH; }
+    }
+    cur.push(it); used += h;
+  });
+  if (cur.length) pages.push(cur);
+  const N = pages.length;
+  // ৩) আসল পাতা
+  box.innerHTML = pages.map((pg, i) => `<div class="wp">${i === 0 ? head : head2}<div class="tb">${thRow}${pg.map((it) => it.g ? gRow(it.g, it.cont) : row(it.w)).join('')}</div>${foot(i, N)}</div>`).join('');
   try {
     const doc = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
     const wps = [...box.querySelectorAll('.wp')];
